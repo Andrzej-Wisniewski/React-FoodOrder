@@ -1,45 +1,65 @@
 import { createContext, useState } from "react";
 
 const UserProgressContext = createContext({
-    progress: '',
-    showCart: () => {},
-    hideCart: () => {},
-    showCheckout: () => {},
-    hideCheckout: () => {}
+  progress: "",
+  showCart: () => {},
+  hideCart: () => {},
+  showCheckout: () => {},
+  hideCheckout: () => {},
+  
+  showLogin: () => {},
+  hideLogin: () => {},
+  showRegister: () => {},
+  hideRegister: () => {}
 });
 
 export function UserProgressContextProvider({ children }) {
-    const [userProgress, setUserProgress] = useState('');
+  const [userProgress, setUserProgress] = useState("");
 
-    function showCart() {
-        setUserProgress('cart');
-    }
+  function showCart() {
+    setUserProgress("cart");
+  }
+  function hideCart() {
+    setUserProgress("");
+  }
+  function showCheckout() {
+    setUserProgress("checkout");
+  }
+  function hideCheckout() {
+    setUserProgress("");
+  }
 
-    function hideCart() {
-        setUserProgress('');
-    }
+  function showLogin() {
+    setUserProgress("login");
+  }
+  function hideLogin() {
+    setUserProgress("");
+  }
 
-    function showCheckout() {
-        setUserProgress('checkout');
-    }
+  function showRegister() {
+    setUserProgress("register");
+  }
+  function hideRegister() {
+    setUserProgress("");
+  }
 
-    function hideCheckout() {
-        setUserProgress('');
-    }
+  const ctx = {
+    progress: userProgress,
+    showCart,
+    hideCart,
+    showCheckout,
+    hideCheckout,
+    showLogin,
+    hideLogin,
+    showRegister,
+    hideRegister
+  };
 
-    const userProgressCtx = {
-        progress: userProgress,
-        showCart,
-        hideCart,
-        showCheckout,
-        hideCheckout
-    };
-
-    return (
-        <UserProgressContext value={userProgressCtx}>
-            {children}
-        </UserProgressContext>
-    );
+  return (
+    <UserProgressContext.Provider value={ctx}>
+      {children}
+    </UserProgressContext.Provider>
+  );
 }
 
-export default UserProgressContext; 
+export default UserProgressContext;
