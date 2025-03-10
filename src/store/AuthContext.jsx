@@ -23,7 +23,7 @@ export function AuthContextProvider({ children }) {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message || "Failed to login.");
+      throw new Error(data.message || "Nie udało się zalogować.");
     }
     const data = await response.json();
     setToken(data.token);
@@ -43,7 +43,7 @@ export function AuthContextProvider({ children }) {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message || "Failed to register.");
+      throw new Error(data.message || "Nie udało się zarejestrować.");
     }
     const data = await response.json();
     setToken(data.token);
