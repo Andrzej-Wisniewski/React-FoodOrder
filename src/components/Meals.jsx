@@ -1,29 +1,27 @@
-import useHttp from '../hooks/useHttp';
-import Error from './UI/Error';
-import MealItem from './MealItem';
+import { useEffect, useState } from 'react';
 
-const requestConfig = {}; 
+const Meals = () => {
+  const [meals, setMeals] = useState([]);
 
-export default function Meals() {
-    const {
-        data: loadedMeals,
-        isLoading,
-        error,
-    } = useHttp('http://localhost:3000/meals', requestConfig, []);
+  useEffect(() => {
+    fetch('http://localhost:3000/meals')
+      .then((response) => response.json())
+      .then((data) => setMeals(data))
+      .catch((error) => console.error('Błąd ładowania posiłków:', error));
+  }, []);
 
-    if (isLoading) {
-        return <p className='center'>Pobieranie posiłków...</p>;
-    }
+  return (
+    <div>
+      <h2>Nasze Menu</h2>
+      <ul>
+        {meals.map((meal) => (
+          <li key={meal.name}>
+            {meal.name} - {meal.price} PLN
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
-    if (error) {
-        return <Error title='Nie udało się pobrać posiłków' message={error} />
-    }
-
-    return (
-        <ul id='meals'>
-            {loadedMeals.map((meal) => (
-                <MealItem key={meal.id} meal={meal} />
-            ))} 
-        </ul>
-    )
-}
+export default Meals;
