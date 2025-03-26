@@ -1,51 +1,57 @@
 import { useCallback, useEffect, useState } from "react";
 
 async function sendHttpRequest(url, config) {
-    const response = await fetch(url, config);
-    
-    const resData = await response.json();
+  const fullUrl = url.startsWith('/api') 
+    ? `http://localhost:3000${url}` 
+    : url;
 
-    if (!response.ok) {
-        throw new Error(
-            resData.message || 'Wystąpił błąd, nie udało się wysłać żądania.'
-        );
+  const response = await fetch(fullUrl, {
+    ...config,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(config?.headers || {})
     }
+  });
 
-    return resData; 
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
 }
 
 export default function useHttp(url, config, initialData) {
-    const [data, setData] = useState(initialData);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState();
+  const [data, setData] = useState(initialData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
 
-    function clearData() {
-        setData(initialData); 
+  const sendRequest = useCallback(async (requestData) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const resData = await sendHttpRequest(url, {
+        ...config,
+        body: requestData ? JSON.stringify(requestData) : undefined
+      });
+      setData(resData);
+      return resData;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
+  }, [url, config]);
 
-    const sendRequest = useCallback(
-        async function sendRequest(data) {
-        setIsLoading(true); 
-            try {
-                const resData = await sendHttpRequest(url, {...config, body: data});
-                setData(resData);
-            } catch (error) {
-                setError(error.message || 'Wystąpił błąd!');
-            }
-            setIsLoading(false); 
-    }, [url, config]);
-
-    useEffect(() => {
-        if ((config && (config.method === 'GET' || !config.method)) || !config) {
-            sendRequest();
-        } 
-    }, [sendRequest, config]);
-
-    return {
-        data, 
-        isLoading,
-        error, 
-        sendRequest,
-        clearData
+  useEffect(() => {
+    if ((config?.method === 'GET' || !config?.method) && !url.startsWith('http')) {
+      sendRequest().catch(() => {});
     }
+  }, [sendRequest, config, url]);
+
+  return { data, isLoading, error, sendRequest };
 }

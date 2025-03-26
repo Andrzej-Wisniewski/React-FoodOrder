@@ -19,32 +19,31 @@ export default function Register() {
     const name = formData.get("name");
     const email = formData.get("email");
     const password = formData.get("password");
-    await authCtx.register(name, email, password); 
-    handleClose(); 
+    await authCtx.register(name, email, password);
+    handleClose();
   }
 
-  const [formState, formAction, isSending, error] = useActionState(registerAction, null);
+  const [formState, formAction, isSending] = useActionState(registerAction, null);
 
-  let modalActions = (
+  let actions = (
     <>
       <Button textOnly onClick={handleClose}>Zamknij</Button>
       <Button type="submit">Zarejestruj</Button>
     </>
   );
+
   if (isSending) {
-    modalActions = <p>Trwa rejestracja...</p>;
+    actions = <p>Trwa rejestracja...</p>;
   }
 
   return (
     <Modal open={userProgressCtx.progress === "register"} onClose={handleClose}>
-      <form onAction={formAction}>
+      <form action={formAction}>
         <h2>Rejestracja</h2>
         <Input label="Imię" type="text" id="name" required />
         <Input label="E-Mail" type="email" id="email" required />
         <Input label="Hasło" type="password" id="password" required />
-
-        {error && <Error title="Błąd rejestracji" message={error} />}
-        <p className="modal-actions">{modalActions}</p>
+        <p className="modal-actions">{actions}</p>
       </form>
     </Modal>
   );

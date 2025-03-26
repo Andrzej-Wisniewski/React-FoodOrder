@@ -1,27 +1,30 @@
-import { useEffect, useState } from 'react';
+import { memo } from 'react';
+import useHttp from '../hooks/useHttp';
+import MealItem from './MealItem';
+import Error from './UI/Error';
 
-const Meals = () => {
-  const [meals, setMeals] = useState([]);
+const Meals = memo(function Meals() {
+  const { 
+    data: loadedMeals, 
+    isLoading, 
+    error 
+  } = useHttp('/meals', { method: 'GET' }, []);
 
-  useEffect(() => {
-    fetch('http://localhost:3000/meals')
-      .then((response) => response.json())
-      .then((data) => setMeals(data))
-      .catch((error) => console.error('Błąd ładowania posiłków:', error));
-  }, []);
+  if (isLoading) {
+    return <p className="center">Ładowanie dań...</p>;
+  }
+
+  if (error) {
+    return <Error title="Failed to fetch meals" message={error} />;
+  }
 
   return (
-    <div>
-      <h2>Nasze Menu</h2>
-      <ul>
-        {meals.map((meal) => (
-          <li key={meal.name}>
-            {meal.name} - {meal.price} PLN
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul id="meals">
+      {loadedMeals?.map((meal) => (
+        <MealItem key={meal.id} meal={meal} />
+      ))}
+    </ul>
   );
-};
+});
 
 export default Meals;

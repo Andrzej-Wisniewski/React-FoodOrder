@@ -10,29 +10,35 @@ const AuthContext = createContext({
 });
 
 export function AuthContextProvider({ children }) {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
   const isLoggedIn = !!token;
 
   async function login(email, password) {
-    const response = await fetch("http://localhost:3000/login", {
+    const response = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
     });
+    
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Nie udało się zalogować.");
     }
+    
     const data = await response.json();
     setToken(data.token);
     setUser(data.user);
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
   }
 
   function logout() {
     setToken(null);
     setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 
   async function register(name, email, password) {
@@ -41,13 +47,17 @@ export function AuthContextProvider({ children }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password })
     });
+    
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Nie udało się zarejestrować.");
     }
+    
     const data = await response.json();
     setToken(data.token);
     setUser(data.user);
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
   }
 
   const contextValue = {
