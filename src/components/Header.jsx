@@ -21,12 +21,17 @@ export default function Header() {
   function handleShowLogin() {
     userProgressCtx.showLogin();
   }
+
   function handleShowRegister() {
     userProgressCtx.showRegister();
   }
 
   function handleLogout() {
     authCtx.logout();
+  }
+
+  function handleShowOrders() {
+    userProgressCtx.showOrders();
   }
 
   return (
@@ -47,9 +52,14 @@ export default function Header() {
         )}
 
         {authCtx.isLoggedIn && (
-          <Button textOnly onClick={handleLogout}>
-            Wyloguj
-          </Button>
+          <>
+            <Button textOnly onClick={handleShowOrders}>
+              Zamówienia
+            </Button>
+            <Button textOnly onClick={handleLogout}>
+              Wyloguj
+            </Button>
+          </>
         )}
 
         <Button textOnly onClick={handleShowCart}>

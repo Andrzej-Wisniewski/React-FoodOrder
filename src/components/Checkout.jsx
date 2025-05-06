@@ -27,7 +27,7 @@ export default function Checkout() {
       name: formData.get('name'),
       email: formData.get('email'),
       street: formData.get('street'),
-      'postal-code': formData.get('postal-code'),
+      'postalCode': formData.get('postal-code'),
       city: formData.get('city')
     };
 
@@ -69,9 +69,9 @@ export default function Checkout() {
           <Input
             label="Kod Pocztowy"
             type="text"
-            id={`${formId}-postal-code`}
-            name="postal-code"
-            autoComplete="postal-code"
+            id={`${formId}-postalCode`}
+            name="postalCode"
+            autoComplete="postalCode"
             required
           />
           <Input

@@ -4,22 +4,38 @@ import Header from "./components/Header";
 import Meals from "./components/Meals";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Orders from "./components/Orders";
 
 import { CartContextProvider } from "./store/CartContext";
 import { UserProgressContextProvider } from "./store/UserProgressContext";
 import { AuthContextProvider } from "./store/AuthContext";
+import { useContext } from "react";
+import UserProgressContext from "./store/UserProgressContext";
+
+function AppContent() {
+  const userProgressCtx = useContext(UserProgressContext);
+
+  return (
+    <>
+      <Header />
+      <Meals />
+      <Cart />
+      <Checkout />
+      <Login />
+      <Register />
+      {userProgressCtx.progress === "orders" && (
+        <Orders onClose={userProgressCtx.hideOrders} />
+      )}
+    </>
+  );
+}
 
 function App() {
   return (
     <AuthContextProvider>
       <UserProgressContextProvider>
         <CartContextProvider>
-          <Header />
-          <Meals />
-          <Cart />
-          <Checkout />
-          <Login />
-          <Register />
+          <AppContent />
         </CartContextProvider>
       </UserProgressContextProvider>
     </AuthContextProvider>

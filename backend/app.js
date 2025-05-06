@@ -216,7 +216,7 @@ app.post('/api/orders', authenticate, async (req, res) => {
       return res.status(400).json({ message: 'Brak pozycji w zamówieniu' });
     }
 
-    const requiredFields = ['email', 'name', 'street', 'postal-code', 'city'];
+    const requiredFields = ['email', 'name', 'street', 'postalCode', 'city'];
     const missingFields = requiredFields.filter(field => !orderData.customer?.[field]?.trim());
     
     if (missingFields.length) {

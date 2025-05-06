@@ -6,11 +6,12 @@ const UserProgressContext = createContext({
   hideCart: () => {},
   showCheckout: () => {},
   hideCheckout: () => {},
-  
   showLogin: () => {},
   hideLogin: () => {},
   showRegister: () => {},
-  hideRegister: () => {}
+  hideRegister: () => {},
+  showOrders: () => {},
+  hideOrders: () => {}
 });
 
 export function UserProgressContextProvider({ children }) {
@@ -28,18 +29,22 @@ export function UserProgressContextProvider({ children }) {
   function hideCheckout() {
     setUserProgress("");
   }
-
   function showLogin() {
     setUserProgress("login");
   }
   function hideLogin() {
     setUserProgress("");
   }
-
   function showRegister() {
     setUserProgress("register");
   }
   function hideRegister() {
+    setUserProgress("");
+  }
+  function showOrders() {
+    setUserProgress("orders");
+  }
+  function hideOrders() {
     setUserProgress("");
   }
 
@@ -52,7 +57,9 @@ export function UserProgressContextProvider({ children }) {
     showLogin,
     hideLogin,
     showRegister,
-    hideRegister
+    hideRegister,
+    showOrders,
+    hideOrders
   };
 
   return (
