@@ -10,7 +10,7 @@ import { CartContextProvider } from "./store/CartContext";
 import { UserProgressContextProvider } from "./store/UserProgressContext";
 import { AuthContextProvider } from "./store/AuthContext";
 import { useContext } from "react";
-import UserProgressContext from "./store/UserProgressContext";
+import UserProgressContext, { PROGRESS_STEPS } from "./store/UserProgressContext";
 
 function AppContent() {
   const userProgressCtx = useContext(UserProgressContext);
@@ -23,7 +23,7 @@ function AppContent() {
       <Checkout />
       <Login />
       <Register />
-      {userProgressCtx.progress === "orders" && (
+      {userProgressCtx.progress === PROGRESS_STEPS.ORDERS && (
         <Orders onClose={userProgressCtx.hideOrders} />
       )}
     </>

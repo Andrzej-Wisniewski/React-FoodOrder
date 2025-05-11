@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { useActionState } from "react";
-import UserProgressContext from "../store/UserProgressContext";
+import UserProgressContext, { PROGRESS_STEPS } from "../store/UserProgressContext";
 import AuthContext from "../store/AuthContext";
 import Modal from "./UI/Modal";
 import Button from "./UI/Button";
@@ -37,12 +37,12 @@ export default function Register() {
   }
 
   return (
-    <Modal open={userProgressCtx.progress === "register"} onClose={handleClose}>
+    <Modal open={userProgressCtx.progress === PROGRESS_STEPS.REGISTER} onClose={handleClose}>
       <form action={formAction}>
         <h2>Rejestracja</h2>
-        <Input label="Imię" type="text" id="name" required />
-        <Input label="E-Mail" type="email" id="email" required />
-        <Input label="Hasło" type="password" id="password" required />
+        <Input label="Imię" type="text" id="name" name="name" required />
+        <Input label="E-Mail" type="email" id="email" name="email" required />
+        <Input label="Hasło" type="password" id="password" name="password" required />
         <p className="modal-actions">{actions}</p>
       </form>
     </Modal>

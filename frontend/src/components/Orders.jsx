@@ -14,7 +14,7 @@ export default function Orders({ onClose }) {
         setIsLoading(true);
         const response = await fetch("http://localhost:3000/api/orders", {
           headers: {
-            Authoriztion: `Bearer ${authCtx.token}`,
+            Authorization: `Bearer ${authCtx.token}`,
             "Content-Type": "application/json",
           },
         });
