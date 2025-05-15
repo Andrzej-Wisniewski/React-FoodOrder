@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: Food Order API
+  version: 1.0.0
+  description: API do składania zamówień i zarządzania użytkownikami
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /api/meals:
+    get:
+      summary: Pobierz listę posiłków
+      responses:
+        '200':
+          description: Lista posiłków
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meal'
+
+  /api/register:
+    post:
+      summary: Rejestracja użytkownika
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+      responses:
+        '201':
+          description: Zarejestrowano
+        '400':
+          description: Błąd walidacji
+        '409':
+          description: Użytkownik już istnieje
+
+  /api/login:
+    post:
+      summary: Logowanie użytkownika
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+      responses:
+        '200':
+          description: Zalogowano
+        '401':
+          description: Błędne dane logowania
+
+  /api/orders:
+    post:
+      summary: Składanie zamówienia (wymaga tokenu JWT)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Zamówienie zapisane
+        '400':
+          description: Nieprawidłowe dane
+
+    get:
+      summary: Pobierz zamówienia użytkownika (wymaga tokenu JWT)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista zamówień
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Meal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: string
+        image:
+          type: string
+
+    RegisterUser:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginUser:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    OrderRequest:
+      type: object
+      required: [items, customer]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+        customer:
+          type: object
+          properties:
+            email:
+              type: string
+            name:
+              type: string
+            street:
+              type: string
+            postalCode:
+              type: string
+            city:
+              type: string
