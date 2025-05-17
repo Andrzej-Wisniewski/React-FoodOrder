@@ -5,20 +5,22 @@ import jwt from "jsonwebtoken";
 import { connectDB, getDB } from "./db.js";
 import { ObjectId } from "mongodb";
 import dotenv from "dotenv";
-import fs from 'fs';
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
-import stripe from 'stripe'; 
+import fs from "fs";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import Stripe from "stripe";
 
 dotenv.config();
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || "your-very-secure-secret";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-11-15 '});
+const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2022-11-15 ",
+});
 
-const file = fs.readFileSync('./openapi.yaml', 'utf8');
-const swaggerDocument = YAML.parse(file); 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const file = fs.readFileSync("./openapi.yaml", "utf8");
+const swaggerDocument = YAML.parse(file);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -32,8 +34,14 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With"
+  );
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
@@ -52,7 +60,9 @@ const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Brak tokenu uwierzytelniającego" });
+      return res
+        .status(401)
+        .json({ message: "Brak tokenu uwierzytelniającego" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -71,14 +81,20 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Authentication error:", error);
-    res.status(401).json({ message: "Nieprawidłowy token", details: error.message });
+    res
+      .status(401)
+      .json({ message: "Nieprawidłowy token", details: error.message });
   }
 };
 
 app.get("/api/meals", async (req, res) => {
   try {
     const db = getDB();
-    const meals = await db.collection("meals").find({}).project({ _id: 0 }).toArray();
+    const meals = await db
+      .collection("meals")
+      .find({})
+      .project({ _id: 0 })
+      .toArray();
 
     const result = meals.map((meal) => ({
       ...meal,
@@ -105,7 +121,9 @@ app.post("/api/register", async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Hasło musi mieć minimum 6 znaków" });
+      return res
+        .status(400)
+        .json({ message: "Hasło musi mieć minimum 6 znaków" });
     }
 
     const db = getDB();
@@ -120,15 +138,20 @@ app.post("/api/register", async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: "user",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const result = await db.collection("users").insertOne(newUser);
 
-    const token = jwt.sign({ email: newUser.email, id: result.insertedId }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { email: newUser.email, id: result.insertedId },
+      JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     res.status(201).json({
       success: true,
@@ -138,11 +161,18 @@ app.post("/api/register", async (req, res) => {
         id: result.insertedId,
         email: newUser.email,
         name: newUser.name,
+        role: newUser.role
       },
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Błąd rejestracji", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd rejestracji",
+        error: error.message,
+      });
   }
 });
 
@@ -179,11 +209,18 @@ app.post("/api/login", async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        role: user.role
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Błąd logowania", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd logowania",
+        error: error.message,
+      });
   }
 });
 
@@ -202,7 +239,9 @@ app.post("/api/orders", authenticate, async (req, res) => {
     );
 
     if (missingFields.length) {
-      return res.status(400).json({ message: `Brak wymaganych pól: ${missingFields.join(", ")}` });
+      return res
+        .status(400)
+        .json({ message: `Brak wymaganych pól: ${missingFields.join(", ")}` });
     }
 
     if (!orderData.customer.email.includes("@")) {
@@ -211,13 +250,13 @@ app.post("/api/orders", authenticate, async (req, res) => {
 
     const db = getDB();
     const newOrder = {
-    ...orderData,
-    userId: req.user._id,
-    status: "pending",
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-  const result = await getDB().collection("orders").insertOne(newOrder);
+      ...orderData,
+      userId: req.user._id,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const result = await getDB().collection("orders").insertOne(newOrder);
 
     res.status(201).json({
       success: true,
@@ -226,7 +265,13 @@ app.post("/api/orders", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Order creation error:", error);
-    res.status(500).json({ success: false, message: "Błąd zapisu zamówienia", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd zapisu zamówienia",
+        error: error.message,
+      });
   }
 });
 
@@ -242,24 +287,73 @@ app.get("/api/orders", authenticate, async (req, res) => {
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error("Get orders error:", error);
-    res.status(500).json({ success: false, message: "Błąd pobierania zamówień", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Błąd pobierania zamówień",
+        error: error.message,
+      });
   }
 });
 
-app.post('/api/create-payment-intent', authenticate, async (req, res) => {
-  const { items, currency = 'pln' } = req.body;
-  const amount = items.reduce((sum, i) => sum + i.quantity * Math.round(i.price * 100), 0);
+app.put("/api/orders/:id/status", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Brak uprawnień do zmiany statusu" });
+    }
+
+    const db = getDB();
+    const orderId = new ObjectId(req.params.id);
+    const { status } = req.body;
+
+    if (
+      !["pending", "in progress", "completed", "cancelled"].includes(status)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowy status zamówienia" });
+    }
+
+    const result = await db
+      .collection("orders")
+      .updateOne(
+        { _id: orderId, userId: req.user._id },
+        { $set: { status, updatedAt: new Date() } }
+      );
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Nie znaleziono zamówienia do aktualizacji" });
+    }
+
+    res.json({ success: true, message: "Status zaktualizowany" });
+  } catch (error) {
+    console.error("Update order status error:", error);
+    res
+      .status(500)
+      .json({ message: "Błąd aktualizacji statusu", error: error.message });
+  }
+});
+
+app.post("/api/payment", authenticate, async (req, res) => {
+  const { items, currency = "pln" } = req.body;
+  const amount = items.reduce(
+    (sum, i) => sum + i.quantity * Math.round(i.price * 100),
+    0
+  );
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await stripeInstance.paymentIntents.create({
       amount,
       currency,
-      metadata: { userId: req.user._id.toString() }
+      metadata: { userId: req.user._id.toString() },
     });
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
-    console.error('Stripe error:', err);
-    res.status(500).json({ message: 'Błąd inicjowania płatności' });
+    console.error("Stripe error:", err);
+    res.status(500).json({ message: "Błąd inicjowania płatności" });
   }
 });
 

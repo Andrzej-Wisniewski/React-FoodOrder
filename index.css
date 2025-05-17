@@ -248,6 +248,52 @@ h1 {
   background-color: rgba(0, 0, 0, 0.55);
 }
 
+.order-status {
+  font-weight: bold;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-left: 0.5rem;
+  text-transform: capitalize;
+}
+
+.order-status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.order-status.in-progress {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.order-status.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.order-status.cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.order-status-selector {
+  margin-left: 1rem;
+  background-color: #312c1d;
+  color: #ffc404;
+  border: 1px solid #ffc404;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.order-status-selector:hover {
+  background-color: #1d1a16;
+  color: #ffab04;
+}
+
 @keyframes fade-slide-up {
   from {
     opacity: 0;

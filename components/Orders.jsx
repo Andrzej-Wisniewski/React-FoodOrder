@@ -1,9 +1,11 @@
-import { useContext, useEffect, useState } from 'react';
-import AuthContext from '../store/AuthContext';
-import UserProgressContext, { PROGRESS_STEPS } from '../store/UserProgressContext';
-import Button from './UI/Button';
-import Error from './UI/Error';
-import { currencyFormatter } from '../util/formatting';
+import { useContext, useEffect, useState } from "react";
+import AuthContext from "../store/AuthContext";
+import UserProgressContext, {
+  PROGRESS_STEPS,
+} from "../store/UserProgressContext";
+import Button from "./UI/Button";
+import Error from "./UI/Error";
+import { currencyFormatter } from "../util/formatting";
 
 export default function Orders() {
   const authCtx = useContext(AuthContext);
@@ -19,16 +21,16 @@ export default function Orders() {
       setError(null);
 
       try {
-        const res = await fetch('/api/orders', {
+        const res = await fetch("/api/orders", {
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authCtx.token}`
-          }
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authCtx.token}`,
+          },
         });
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.message || 'Nie udało się pobrać zamówień');
+          throw new Error(data.message || "Nie udało się pobrać zamówień");
         }
 
         const { data } = await res.json();
@@ -49,14 +51,37 @@ export default function Orders() {
     userProgressCtx.hideOrders();
   }
 
-  if (!authCtx.isLoggedIn) {
-    return null;
+  async function handleStatusChange(orderId, newStatus) {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authCtx.token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Nie udało się zaktualizować statusu.");
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
   }
+
+  if (!authCtx.isLoggedIn) return null;
 
   return (
     <dialog open className="orders-modal" onClose={handleClose}>
       <h2>Twoje zamówienia</h2>
-      <Button textOnly onClick={handleClose}>Zamknij</Button>
+      <Button textOnly onClick={handleClose}>
+        Zamknij
+      </Button>
 
       {isLoading && <p>Ładowanie zamówień...</p>}
       {error && <Error title="Błąd" message={error} />}
@@ -64,15 +89,48 @@ export default function Orders() {
 
       {!isLoading && !error && orders.length > 0 && (
         <ul className="orders-list">
-          {orders.map(order => (
+          {orders.map((order) => (
             <li key={order._id} className="order-item">
               <h3>Zamówienie z {new Date(order.createdAt).toLocaleString()}</h3>
-              <p>Status: <strong>{order.status}</strong></p>
-              <p>Kwota: {currencyFormatter.format(order.totalPrice)}</p>
+
+              <p>
+                Status:
+                <span
+                  className={`order-status ${order.status.replace(/\s/g, "-")}`}
+                >
+                  {order.status}
+                </span>
+                {authCtx.user?.role === "admin" && (
+                  <select
+                    className="order-status-selector"
+                    value={order.status}
+                    onChange={(e) =>
+                      handleStatusChange(order._id, e.target.value)
+                    }
+                  >
+                    <option value="pending">Oczekujące</option>
+                    <option value="in progress">W trakcie</option>
+                    <option value="completed">Zrealizowane</option>
+                    <option value="cancelled">Anulowane</option>
+                  </select>
+                )}
+              </p>
+
+              <p>
+                Kwota:{" "}
+                {currencyFormatter.format(
+                  order.totalPrice ||
+                    order.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    )
+                )}
+              </p>
               <ul>
                 {order.items.map((it, idx) => (
                   <li key={idx}>
-                    {it.quantity}× {it.name} ({currencyFormatter.format(it.price)})
+                    {it.quantity}× {it.name} (
+                    {currencyFormatter.format(it.price)})
                   </li>
                 ))}
               </ul>

@@ -35,11 +35,18 @@ export function AuthContextProvider({ children }) {
       body: JSON.stringify({ email, password })
     });
     const data = await response.json();
+
     if (!response.ok) {
       throw new Error(data.message || 'Nie udało się zalogować.');
     }
+
     setToken(data.token);
-    setUser(data.user);
+    setUser({
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.name,
+      role: data.user.role 
+    });
   }
 
   async function register(name, email, password) {
@@ -49,11 +56,18 @@ export function AuthContextProvider({ children }) {
       body: JSON.stringify({ name, email, password })
     });
     const data = await response.json();
+
     if (!response.ok) {
       throw new Error(data.message || 'Nie udało się zarejestrować.');
     }
+
     setToken(data.token);
-    setUser(data.user);
+    setUser({
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.name,
+      role: data.user.role 
+    });
   }
 
   function logout() {
