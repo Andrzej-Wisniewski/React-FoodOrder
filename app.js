@@ -93,6 +93,7 @@ app.get("/api/meals", async (req, res) => {
     const meals = await db
       .collection("meals")
       .find({})
+      .sort({ id: 1 })
       .project({ _id: 0 })
       .toArray();
 
@@ -280,7 +281,7 @@ app.get("/api/orders", authenticate, async (req, res) => {
     const db = getDB();
     const orders = await db
       .collection("orders")
-      .find({ userId: req.user._id })
+      .find(req.user.role === "admin" ? {} : { userId: req.user._id })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -318,7 +319,7 @@ app.put("/api/orders/:id/status", authenticate, async (req, res) => {
     const result = await db
       .collection("orders")
       .updateOne(
-        { _id: orderId, userId: req.user._id },
+        { _id: orderId },
         { $set: { status, updatedAt: new Date() } }
       );
 
@@ -338,18 +339,32 @@ app.put("/api/orders/:id/status", authenticate, async (req, res) => {
 });
 
 app.post("/api/payment", authenticate, async (req, res) => {
-  const { items, currency = "pln" } = req.body;
+  const { items, currency = "pln", metadata = {} } = req.body;
+
   const amount = items.reduce(
     (sum, i) => sum + i.quantity * Math.round(i.price * 100),
     0
   );
 
+  console.log("Żądanie do /api/payment:");
+  console.log("- items:", items);
+  console.log("- metadata:", metadata);
+  console.log("- amount:", amount);
+
   try {
     const paymentIntent = await stripeInstance.paymentIntents.create({
       amount,
       currency,
-      metadata: { userId: req.user._id.toString() },
+      metadata: {
+        userId: req.user._id.toString(),
+        email: req.user.email,
+        ...metadata, 
+      },
     });
+
+    console.log("Utworzono PaymentIntent:", paymentIntent.id);
+    console.log("Zwracany clientSecret:", paymentIntent.client_secret);
+
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
     console.error("Stripe error:", err);
