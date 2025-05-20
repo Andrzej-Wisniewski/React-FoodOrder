@@ -25,6 +25,13 @@ export default function Register() {
     const email = formData.get("email");
     const password = formData.get("password");
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError({
+        title: "Nieprawidłowy e-mail",
+        message: "Adres e-mail musi zawierać znak '@' i mieć poprawny format.",
+      });
+      return;
+    }
     try {
       await authCtx.register(name, email, password);
       handleClose();
@@ -45,7 +52,7 @@ export default function Register() {
         <form onSubmit={handleSubmit} id={formId}>
           <h2>Rejestracja</h2>
           <Input label="Imię" type="text" name="name" required />
-          <Input label="E-Mail" type="email" name="email" required />
+          <Input label="E-Mail" type="text" name="email" required />
           <Input label="Hasło" type="password" name="password" required />
           <div className="modal-actions">
             <Button textOnly type="button" onClick={handleClose}>

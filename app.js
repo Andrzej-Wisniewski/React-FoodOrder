@@ -1,3 +1,8 @@
+/**
+ * @file app.js
+ * @description Backend API aplikacji do zamawiania jedzenia
+ */
+
 import bodyParser from "body-parser";
 import express from "express";
 import bcrypt from "bcryptjs";
@@ -6,9 +11,11 @@ import { connectDB, getDB } from "./db.js";
 import { ObjectId } from "mongodb";
 import dotenv from "dotenv";
 import fs from "fs";
+import multer from "multer";
+import path from "path";
+import Stripe from "stripe";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
-import Stripe from "stripe";
 
 dotenv.config();
 
@@ -56,6 +63,36 @@ app.use((req, res, next) => {
   next();
 });
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${base}-${uniqueSuffix}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (![".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
+      return cb(new Error("Dozwolone formaty to .jpg, .jpeg, .png, .webp"));
+    }
+    cb(null, true);
+  },
+});
+
+/**
+ * Middleware do uwierzytelniania użytkownika za pomocą tokenu JWT.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ * @param {Function} next
+ */
+
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -87,6 +124,11 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+/**
+ * @route GET /api/meals
+ * @returns {Array<Object>} Lista dostępnych dań
+ */
+
 app.get("/api/meals", async (req, res) => {
   try {
     const db = getDB();
@@ -108,6 +150,47 @@ app.get("/api/meals", async (req, res) => {
     res.status(500).json({ message: "Błąd serwera", error: error.message });
   }
 });
+
+app.post(
+  "/api/admin/meals/:id/image",
+  authenticate,
+  authorizeAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const db = getDB();
+      const mealId = new ObjectId(req.params.id);
+      const filename = req.file.filename;
+
+      const meal = await db.collection("meals").findOne({ _id: mealId });
+
+      if (meal?.image) {
+        const oldPath = path.join("public/images", meal.image);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+
+      await db
+        .collection("meals")
+        .updateOne({ _id: mealId }, { $set: { image: filename } });
+
+      res.json({ success: true, filename });
+    } catch (error) {
+      console.error("Upload image error:", error);
+      res
+        .status(500)
+        .json({ message: "Błąd przesyłania zdjęcia", error: error.message });
+    }
+  }
+);
+
+/**
+ * @route POST /api/register
+ * @param {string} name
+ * @param {string} email
+ * @param {string} password
+ */
 
 app.post("/api/register", async (req, res) => {
   try {
@@ -162,20 +245,24 @@ app.post("/api/register", async (req, res) => {
         id: result.insertedId,
         email: newUser.email,
         name: newUser.name,
-        role: newUser.role
+        role: newUser.role,
       },
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Błąd rejestracji",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Błąd rejestracji",
+      error: error.message,
+    });
   }
 });
+
+/**
+ * @route POST /api/login
+ * @param {string} email
+ * @param {string} password
+ */
 
 app.post("/api/login", async (req, res) => {
   try {
@@ -210,20 +297,23 @@ app.post("/api/login", async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Błąd logowania",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Błąd logowania",
+      error: error.message,
+    });
   }
 });
+
+/**
+ * @route POST /api/orders
+ * @security bearerAuth
+ */
 
 app.post("/api/orders", authenticate, async (req, res) => {
   try {
@@ -266,15 +356,18 @@ app.post("/api/orders", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Order creation error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Błąd zapisu zamówienia",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Błąd zapisu zamówienia",
+      error: error.message,
+    });
   }
 });
+
+/**
+ * @route GET /api/orders
+ * @security bearerAuth
+ */
 
 app.get("/api/orders", authenticate, async (req, res) => {
   try {
@@ -288,20 +381,26 @@ app.get("/api/orders", authenticate, async (req, res) => {
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error("Get orders error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Błąd pobierania zamówień",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Błąd pobierania zamówień",
+      error: error.message,
+    });
   }
 });
+
+/**
+ * @route PUT /api/orders/:id/status
+ * @param {string} id
+ * @security bearerAuth
+ */
 
 app.put("/api/orders/:id/status", authenticate, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Brak uprawnień do zmiany statusu" });
+      return res
+        .status(403)
+        .json({ message: "Brak uprawnień do zmiany statusu" });
     }
 
     const db = getDB();
@@ -318,10 +417,7 @@ app.put("/api/orders/:id/status", authenticate, async (req, res) => {
 
     const result = await db
       .collection("orders")
-      .updateOne(
-        { _id: orderId },
-        { $set: { status, updatedAt: new Date() } }
-      );
+      .updateOne({ _id: orderId }, { $set: { status, updatedAt: new Date() } });
 
     if (result.modifiedCount === 0) {
       return res
@@ -338,6 +434,11 @@ app.put("/api/orders/:id/status", authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @route POST /api/payment
+ * @security bearerAuth
+ */
+
 app.post("/api/payment", authenticate, async (req, res) => {
   const { items, currency = "pln", metadata = {} } = req.body;
 
@@ -346,11 +447,6 @@ app.post("/api/payment", authenticate, async (req, res) => {
     0
   );
 
-  console.log("Żądanie do /api/payment:");
-  console.log("- items:", items);
-  console.log("- metadata:", metadata);
-  console.log("- amount:", amount);
-
   try {
     const paymentIntent = await stripeInstance.paymentIntents.create({
       amount,
@@ -358,12 +454,9 @@ app.post("/api/payment", authenticate, async (req, res) => {
       metadata: {
         userId: req.user._id.toString(),
         email: req.user.email,
-        ...metadata, 
+        ...metadata,
       },
     });
-
-    console.log("Utworzono PaymentIntent:", paymentIntent.id);
-    console.log("Zwracany clientSecret:", paymentIntent.client_secret);
 
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
@@ -371,6 +464,171 @@ app.post("/api/payment", authenticate, async (req, res) => {
     res.status(500).json({ message: "Błąd inicjowania płatności" });
   }
 });
+
+/**
+ * Middleware autoryzujący administratora
+ */
+function authorizeAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res
+      .status(403)
+      .json({ message: "Brak dostępu (tylko administrator)" });
+  }
+  next();
+}
+
+/**
+ * @route GET /api/admin/meals
+ * @desc Zwraca listę wszystkich dań (tylko admin)
+ */
+app.get("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const meals = await getDB()
+      .collection("meals")
+      .find()
+      .sort({ name: 1 })
+      .toArray();
+    res.json(meals); 
+  } catch (error) {
+    console.error("GET /api/admin/meals error:", error);
+    res
+      .status(500)
+      .json({ message: "Błąd pobierania dań", error: error.message });
+  }
+});
+
+/**
+ * @route POST /api/admin/meals
+ * @desc Dodaje nowe danie (tylko admin)
+ */
+app.post("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const { name, price, description, image } = req.body;
+
+    if (!name || !price || !description || !image) {
+      return res.status(400).json({ message: "Wszystkie pola są wymagane." });
+    }
+
+    const newMeal = {
+      name,
+      price: parseFloat(price),
+      description,
+      image,
+      createdAt: new Date(),
+    };
+
+    const result = await getDB().collection("meals").insertOne(newMeal);
+    res.status(201).json({ id: result.insertedId, ...newMeal });
+  } catch (error) {
+    console.error("POST /api/admin/meals error:", error);
+    res
+      .status(500)
+      .json({ message: "Błąd dodawania dania", error: error.message });
+  }
+});
+
+/**
+ * @route DELETE /api/admin/meals/:id
+ * @desc Usuwa danie po ID (tylko admin)
+ */
+app.delete(
+  "/api/admin/meals/:id",
+  authenticate,
+  authorizeAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await getDB()
+        .collection("meals")
+        .deleteOne({ _id: new ObjectId(id) });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "Nie znaleziono dania." });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("DELETE /api/admin/meals/:id error:", error);
+      res
+        .status(500)
+        .json({ message: "Błąd usuwania dania", error: error.message });
+    }
+  }
+);
+
+/**
+ * @route PUT /api/admin/meals/:id
+ * @desc Edytuje dane posiłku (tylko admin)
+ */
+app.put(
+  "/api/admin/meals/:id",
+  authenticate,
+  authorizeAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, price, description, image } = req.body;
+
+      if (!name || !price || !description || !image) {
+        return res.status(400).json({ message: "Wszystkie pola są wymagane." });
+      }
+
+      const updatedMeal = {
+        name,
+        price: parseFloat(price),
+        description,
+        image,
+        updatedAt: new Date(),
+      };
+
+      const result = await getDB()
+        .collection("meals")
+        .updateOne({ _id: new ObjectId(id) }, { $set: updatedMeal });
+
+      if (result.matchedCount === 0) {
+        return res
+          .status(404)
+          .json({ message: "Nie znaleziono dania do edycji." });
+      }
+
+      res.json({ success: true, message: "Danie zaktualizowane." });
+    } catch (error) {
+      console.error("PUT /api/admin/meals/:id error:", error);
+      res
+        .status(500)
+        .json({ message: "Błąd edytowania dania", error: error.message });
+    }
+  }
+);
+
+/**
+ * @route POST /api/admin/meals/:id/image
+ * @desc Przesyła nowe zdjęcie do posiłku
+ */
+app.post(
+  "/api/admin/meals/:id/image",
+  authenticate,
+  authorizeAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const db = getDB();
+      const mealId = new ObjectId(req.params.id);
+      const filename = req.file.filename;
+
+      await db
+        .collection("meals")
+        .updateOne({ _id: mealId }, { $set: { image: filename } });
+
+      res.json({ success: true, filename });
+    } catch (error) {
+      console.error("Upload image error:", error);
+      res
+        .status(500)
+        .json({ message: "Błąd przesyłania zdjęcia", error: error.message });
+    }
+  }
+);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
