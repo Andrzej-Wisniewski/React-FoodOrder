@@ -135,8 +135,7 @@ app.get("/api/meals", async (req, res) => {
     const meals = await db
       .collection("meals")
       .find({})
-      .sort({ id: 1 })
-      .project({ _id: 0 })
+      .sort({ name: 1 })
       .toArray();
 
     const result = meals.map((meal) => ({
