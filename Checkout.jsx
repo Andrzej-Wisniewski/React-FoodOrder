@@ -23,7 +23,6 @@ export default function Checkout() {
   const cartCtx = useContext(CartContext);
   const userProgressCtx = useContext(UserProgressContext);
   const authCtx = useContext(AuthContext);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const cartTotal = cartCtx.items.reduce(
     (sum, i) => sum + i.quantity * i.price,
@@ -59,7 +58,7 @@ export default function Checkout() {
                 cartCtx.clearCart();
                 userProgressCtx.hideCheckout();
                 setTimeout(() => {
-                  setShowSuccessModal(true);
+                  userProgressCtx.triggerSuccessModal();
                 }, 100);
               }}
             />
@@ -81,11 +80,11 @@ export default function Checkout() {
         </Modal>
       )}
 
-      {showSuccessModal && (
+      {userProgressCtx.showSuccessModal && (
         <Modal
           open
           onClose={() => {
-            setShowSuccessModal(false);
+            userProgressCtx.hideSuccess();
             userProgressCtx.showOrders();
           }}
         >
@@ -94,7 +93,7 @@ export default function Checkout() {
           <div className="modal-actions">
             <Button
               onClick={() => {
-                setShowSuccessModal(false);
+                userProgressCtx.hideSuccess();
                 userProgressCtx.showOrders();
               }}
             >

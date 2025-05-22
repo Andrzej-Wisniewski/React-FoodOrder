@@ -55,10 +55,10 @@ export default function Register() {
           <Input label="E-Mail" type="text" name="email" required />
           <Input label="Hasło" type="password" name="password" required />
           <div className="modal-actions">
+            <Button type="submit">Zarejestruj</Button>
             <Button textOnly type="button" onClick={handleClose}>
               Zamknij
             </Button>
-            <Button type="submit">Zarejestruj</Button>
           </div>
         </form>
       </Modal>

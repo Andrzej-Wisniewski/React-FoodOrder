@@ -41,11 +41,11 @@ export default function Login() {
           <Input label="E-Mail" type="email" id={`${formId}-email`} name="email" required />
           <Input label="Hasło" type="password" id={`${formId}-password`} name="password" required />
           <div className="modal-actions">
-            <Button textOnly type="button" onClick={handleClose}>
-              Zamknij
-            </Button>
             <Button type="submit" disabled={isSending}>
               {isSending ? "Logowanie..." : "Zaloguj"}
+            </Button>
+            <Button textOnly type="button" onClick={handleClose}>
+              Zamknij
             </Button>
           </div>
         </form>

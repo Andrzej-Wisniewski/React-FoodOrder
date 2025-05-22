@@ -23,7 +23,7 @@ const Meals = memo(function Meals() {
   return (
     <ul id="meals">
       {loadedMeals.map((meal) => (
-        <MealItem key={meal._id} meal={meal} />
+        <MealItem key={meal._id} meal={{ ...meal, id: meal._id }} />
       ))}
     </ul>
   );
