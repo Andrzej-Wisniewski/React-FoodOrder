@@ -7,6 +7,8 @@ import UserProgressContext, {
   PROGRESS_STEPS,
 } from "../store/UserProgressContext";
 
+const CATEGORIES = ["Przystawka", "Zupa", "Danie główne", "Deser", "Napoje"];
+
 export default function Menu() {
   const authCtx = useContext(AuthContext);
   const userProgressCtx = useContext(UserProgressContext);
@@ -17,6 +19,7 @@ export default function Menu() {
     price: "",
     description: "",
     image: null,
+    category: "",
   });
   const [editingMeal, setEditingMeal] = useState(null);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
@@ -42,8 +45,15 @@ export default function Menu() {
       if (!res.ok) throw new Error(`Błąd serwera: ${res.status}`);
 
       const data = await res.json();
-      if (!Array.isArray(data))
-        throw new Error("Odpowiedź nie zawiera tablicy.");
+      if (!Array.isArray(data)) throw new Error("Odpowiedź nie zawiera tablicy.");
+
+      // sortowanie po kategorii
+      data.sort((a, b) => {
+        const indexA = CATEGORIES.indexOf(a.category);
+        const indexB = CATEGORIES.indexOf(b.category);
+        return indexA - indexB;
+      });
+
       setMeals(data);
     } catch (err) {
       setError("Błąd pobierania posiłków: " + err.message);
@@ -53,9 +63,15 @@ export default function Menu() {
   }
 
   async function handleAddMeal() {
-    const { name, price, description, image } = newMeal;
-    if (!name || !price || !description || !image) {
+    const { name, price, description, image, category } = newMeal;
+
+    if (!name || !price || !description || !image || !category) {
       setError("Uzupełnij wszystkie pola.");
+      return;
+    }
+
+    if (!CATEGORIES.includes(category)) {
+      setError("Nieprawidłowa kategoria.");
       return;
     }
 
@@ -71,6 +87,7 @@ export default function Menu() {
           price,
           description,
           image: "placeholder.jpg",
+          category,
         }),
       });
 
@@ -93,12 +110,16 @@ export default function Menu() {
 
       if (!imgRes.ok) {
         const errData = await imgRes.json().catch(() => ({}));
-        throw new Error(
-          errData.message || `Błąd zapisu zdjęcia: HTTP ${imgRes.status}`
-        );
+        throw new Error(errData.message || `Błąd zapisu zdjęcia: HTTP ${imgRes.status}`);
       }
 
-      setNewMeal({ name: "", price: "", description: "", image: null });
+      setNewMeal({
+        name: "",
+        price: "",
+        description: "",
+        image: null,
+        category: "",
+      });
       fetchMeals();
     } catch (err) {
       setError("Nie udało się dodać posiłku: " + err.message);
@@ -124,8 +145,15 @@ export default function Menu() {
   }
 
   async function handleSaveEdit() {
-    if (!editingMeal.name || !editingMeal.price || !editingMeal.description) {
+    const { name, price, description, category } = editingMeal;
+
+    if (!name || !price || !description || !category) {
       setError("Uzupełnij wszystkie pola.");
+      return;
+    }
+
+    if (!CATEGORIES.includes(category)) {
+      setError("Nieprawidłowa kategoria.");
       return;
     }
 
@@ -148,14 +176,11 @@ export default function Menu() {
         const imageForm = new FormData();
         imageForm.append("image", selectedImageFile);
 
-        const imgRes = await fetch(
-          `/api/admin/meals/${editingMeal._id}/image`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${authCtx.token}` },
-            body: imageForm,
-          }
-        );
+        const imgRes = await fetch(`/api/admin/meals/${editingMeal._id}/image`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${authCtx.token}` },
+          body: imageForm,
+        });
 
         if (!imgRes.ok) {
           const err = await imgRes.json().catch(() => ({}));
@@ -237,6 +262,19 @@ export default function Menu() {
                     })
                   }
                 />
+                <select
+                  value={editingMeal.category || ""}
+                  onChange={(e) =>
+                    setEditingMeal({ ...editingMeal, category: e.target.value })
+                  }
+                >
+                  <option value="">-- wybierz kategorię --</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="file"
                   accept="image/*"
@@ -250,13 +288,11 @@ export default function Menu() {
             ) : (
               <>
                 <strong>
-                  {meal.name} — {Number(meal.price).toFixed(2)} zł
+                  {meal.name} — {Number(meal.price).toFixed(2)} zł ({meal.category})
                 </strong>
                 <div className="modal-actions" style={{ marginTop: "0.5rem" }}>
                   <Button onClick={() => setEditingMeal(meal)}>Edytuj</Button>
-                  <Button onClick={() => handleDeleteMeal(meal._id)}>
-                    Usuń
-                  </Button>
+                  <Button onClick={() => handleDeleteMeal(meal._id)}>Usuń</Button>
                 </div>
               </>
             )}
@@ -286,6 +322,17 @@ export default function Menu() {
             setNewMeal({ ...newMeal, description: e.target.value })
           }
         />
+        <select
+          value={newMeal.category}
+          onChange={(e) => setNewMeal({ ...newMeal, category: e.target.value })}
+        >
+          <option value="">-- wybierz kategorię --</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
         <input
           type="file"
           accept="image/*"

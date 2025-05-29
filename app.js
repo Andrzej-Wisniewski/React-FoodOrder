@@ -275,7 +275,7 @@ app.post("/api/login", async (req, res) => {
     const user = await db.collection("users").findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "Użytkownik nie znaleziony" });
+      return res.status(401).json({ message: "Nieprawidłowe dane logowania" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -513,6 +513,7 @@ app.post("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
       price: parseFloat(price),
       description,
       image,
+      category,
       createdAt: new Date(),
     };
 
