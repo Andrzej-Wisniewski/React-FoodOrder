@@ -5,19 +5,15 @@ import Button from "./UI/Button";
 import Error from "./UI/Error";
 import Modal from "./UI/Modal";
 import { currencyFormatter } from "../util/formatting";
+import Input from "./UI/Input";
 
 function translateStatus(status) {
   switch (status) {
-    case "pending":
-      return "Oczekujące";
-    case "in progress":
-      return "W trakcie";
-    case "completed":
-      return "Zrealizowane";
-    case "cancelled":
-      return "Anulowane";
-    default:
-      return status;
+    case "pending": return "Oczekujące";
+    case "in progress": return "W trakcie";
+    case "completed": return "Zrealizowane";
+    case "cancelled": return "Anulowane";
+    default: return status;
   }
 }
 
@@ -29,12 +25,14 @@ export default function Orders() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
+  const [reviewingItem, setReviewingItem] = useState(null);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     async function fetchOrders() {
       setIsLoading(true);
-      setError(null);
-
       try {
         const res = await fetch("/api/orders", {
           headers: {
@@ -43,12 +41,8 @@ export default function Orders() {
           },
         });
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.message || "Nie udało się pobrać zamówień");
-        }
-
         const { data } = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Nie udało się pobrać zamówień");
         setOrders(data);
       } catch (err) {
         setError(err.message);
@@ -57,9 +51,7 @@ export default function Orders() {
       }
     }
 
-    if (authCtx.isLoggedIn) {
-      fetchOrders();
-    }
+    if (authCtx.isLoggedIn) fetchOrders();
   }, [authCtx.token, authCtx.isLoggedIn]);
 
   function handleClose() {
@@ -77,11 +69,7 @@ export default function Orders() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Nie udało się zaktualizować statusu.");
-      }
-
+      if (!res.ok) throw new Error("Nie udało się zaktualizować statusu.");
       setOrders((prev) =>
         prev.map((order) =>
           order._id === orderId ? { ...order, status: newStatus } : order
@@ -90,8 +78,46 @@ export default function Orders() {
     } catch (err) {
       setErrorModal({
         title: "Błąd aktualizacji",
-        message: err.message || "Nie udało się zaktualizować statusu.",
+        message: err.message,
       });
+    }
+  }
+
+  async function submitReview() {
+    if (!reviewingItem || !reviewingItem.id || reviewingItem.id.length !== 24) {
+      setErrorModal({ title: "Błąd recenzji", message: "Nieprawidłowe ID dania." });
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      const res = await fetch(`/api/meals/${reviewingItem.id}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authCtx.token}`,
+        },
+        body: JSON.stringify({
+          rating: reviewRating,
+          comment: reviewText,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Nie udało się dodać recenzji");
+      }
+
+      setReviewingItem(null);
+      setReviewText("");
+      setReviewRating(5);
+    } catch (err) {
+      setErrorModal({
+        title: "Błąd recenzji",
+        message: err.message,
+      });
+    } finally {
+      setIsSubmittingReview(false);
     }
   }
 
@@ -116,21 +142,14 @@ export default function Orders() {
 
                 <p>
                   Status:{" "}
-                  <span
-                    className={`order-status ${order.status.replace(
-                      /\s/g,
-                      "-"
-                    )}`}
-                  >
+                  <span className={`order-status ${order.status.replace(/\s/g, "-")}`}>
                     {translateStatus(order.status)}
                   </span>
                   {authCtx.user?.role === "admin" && (
                     <select
                       className="order-status-selector"
                       value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(order._id, e.target.value)
-                      }
+                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
                     >
                       <option value="pending">Oczekujące</option>
                       <option value="in progress">W trakcie</option>
@@ -144,10 +163,10 @@ export default function Orders() {
                   Kwota:{" "}
                   {currencyFormatter.format(
                     order.totalPrice ||
-                      order.items.reduce(
-                        (sum, item) => sum + item.price * item.quantity,
-                        0
-                      )
+                    order.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    )
                   )}
                 </p>
 
@@ -156,6 +175,18 @@ export default function Orders() {
                     <li key={idx}>
                       {it.quantity}× {it.name} (
                       {currencyFormatter.format(it.price)})
+                      {order.status === "completed" && (
+                        <Button
+                          onClick={() =>
+                            setReviewingItem({
+                              id: it.mealId?.$oid || it.mealId || it.id || it._id,
+                              name: it.name,
+                            })
+                          }
+                        >
+                          Dodaj recenzję
+                        </Button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -174,6 +205,38 @@ export default function Orders() {
           <Error title={errorModal.title} message={errorModal.message} />
           <div className="modal-actions" style={{ justifyContent: "flex-end" }}>
             <Button onClick={() => setErrorModal(null)}>Zamknij</Button>
+          </div>
+        </Modal>
+      )}
+
+      {reviewingItem && (
+        <Modal open className="review-modal" onClose={() => setReviewingItem(null)}>
+          <h2>Recenzja: {reviewingItem.name}</h2>
+          <div className="control">
+            <label>Ocena (1–5):</label>
+            <select
+              className="rating-select"
+              value={reviewRating}
+              onChange={(e) => setReviewRating(Number(e.target.value))}
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          <div className="control">
+            <label>Komentarz:</label>
+            <textarea
+              rows={3}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+            />
+          </div>
+          <div className="modal-actions">
+            <Button onClick={submitReview} disabled={isSubmittingReview}>
+              {isSubmittingReview ? "Wysyłanie…" : "Wyślij"}
+            </Button>
+            <Button onClick={() => setReviewingItem(null)}>Anuluj</Button>
           </div>
         </Modal>
       )}

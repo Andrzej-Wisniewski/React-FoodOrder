@@ -42,6 +42,8 @@ export function UserProgressContextProvider({ children }) {
     hideCheckout: () => setUserProgress(null),
     hideOrders: () => setUserProgress(null),
     hideMenu: () => setUserProgress(null),
+    hideLogin: () => setUserProgress(null),
+    hideRegister: () => setUserProgress(null),
     showSuccessModal,
     triggerSuccessModal: () => setShowSuccessModal(true),
     hideSuccessModal: () => setShowSuccessModal(false),

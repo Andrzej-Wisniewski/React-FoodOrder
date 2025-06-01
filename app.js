@@ -314,10 +314,13 @@ app.post("/api/login", async (req, res) => {
  * @security bearerAuth
  */
 
+/**
+ * @route POST /api/orders
+ * @security bearerAuth
+ */
 app.post("/api/orders", authenticate, async (req, res) => {
   try {
     const orderData = req.body.order;
-    const userId = req.user._id;
 
     if (!orderData?.items?.length) {
       return res.status(400).json({ message: "Brak pozycji w zamówieniu" });
@@ -338,15 +341,30 @@ app.post("/api/orders", authenticate, async (req, res) => {
       return res.status(400).json({ message: "Nieprawidłowy email" });
     }
 
+    const transformedItems = orderData.items.map((item) => {
+      if (!item.id || !item.name || !item.price || !item.quantity) {
+        throw new Error("Nieprawidłowe dane pozycji zamówienia.");
+      }
+
+      return {
+        mealId: new ObjectId(item.id), 
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      };
+    });
+
     const db = getDB();
     const newOrder = {
-      ...orderData,
+      items: transformedItems,
+      customer: orderData.customer,
       userId: req.user._id,
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    const result = await getDB().collection("orders").insertOne(newOrder);
+
+    const result = await db.collection("orders").insertOne(newOrder);
 
     res.status(201).json({
       success: true,
@@ -487,7 +505,7 @@ app.get("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
       .find()
       .sort({ name: 1 })
       .toArray();
-    res.json(meals); 
+    res.json(meals);
   } catch (error) {
     console.error("GET /api/admin/meals error:", error);
     res
@@ -502,10 +520,21 @@ app.get("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
  */
 app.post("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
   try {
+    const CATEGORIES = [
+      "Przystawka",
+      "Zupa",
+      "Danie główne",
+      "Deser",
+      "Napoje",
+    ];
     const { name, price, description, image } = req.body;
 
     if (!name || !price || !description || !image) {
       return res.status(400).json({ message: "Wszystkie pola są wymagane." });
+    }
+
+    if (!CATEGORIES.includes(category)) {
+      return res.status(400).json({ message: "Nieprawidłowa kategoria." });
     }
 
     const newMeal = {
@@ -567,10 +596,14 @@ app.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, price, description, image } = req.body;
+      const { name, price, description, image, category } = req.body;
 
-      if (!name || !price || !description || !image) {
+      if (!name || !price || !description || !image || !category) {
         return res.status(400).json({ message: "Wszystkie pola są wymagane." });
+      }
+
+      if (!CATEGORIES.includes(category)) {
+        return res.status(400).json({ message: "Nieprawidłowa kategoria." });
       }
 
       const updatedMeal = {
@@ -578,6 +611,7 @@ app.put(
         price: parseFloat(price),
         description,
         image,
+        category,
         updatedAt: new Date(),
       };
 
@@ -629,6 +663,90 @@ app.post(
     }
   }
 );
+
+/**
+ * @route POST /api/meals/:mealId/reviews
+ * @desc Dodaje nową recenzję do dania
+ * @security bearerAuth
+ */
+app.post("/api/meals/:mealId/reviews", authenticate, async (req, res) => {
+  const { rating, comment } = req.body;
+  const { mealId } = req.params;
+
+  if (!ObjectId.isValid(mealId)) {
+    return res.status(400).json({ message: "Nieprawidłowe ID dania." });
+  }
+
+  if (!rating || rating < 1 || rating > 5 || !comment?.trim()) {
+    return res.status(400).json({ message: "Nieprawidłowe dane recenzji." });
+  }
+
+  try {
+    const db = getDB();
+
+    const hasOrdered = await db.collection("orders").findOne({
+      userId: req.user._id,
+      "items.mealId": new ObjectId(mealId),
+    });
+
+    if (!hasOrdered) {
+      return res.status(403).json({
+        message: "Możesz ocenić tylko dania, które zamówiłeś.",
+      });
+    }
+
+    const existing = await db.collection("reviews").findOne({
+      mealId: new ObjectId(mealId),
+      userId: req.user._id,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Już dodałeś recenzję do tego dania.",
+      });
+    }
+
+    const review = {
+      mealId: new ObjectId(mealId),
+      userId: req.user._id,
+      userName: req.user.name,
+      rating,
+      comment: comment.trim(),
+      createdAt: new Date(),
+    };
+
+    await db.collection("reviews").insertOne(review);
+
+    res.status(201).json({ success: true, message: "Recenzja dodana." });
+  } catch (error) {
+    console.error("POST /api/meals/:mealId/reviews error:", error);
+    res.status(500).json({ message: "Błąd dodawania recenzji", error: error.message });
+  }
+});
+
+/**
+ * @route GET /api/meals/:mealId/reviews
+ * @desc Pobiera wszystkie recenzje dania
+ */
+app.get("/api/meals/:mealId/reviews", async (req, res) => {
+  const { mealId } = req.params;
+
+  try {
+    const db = getDB();
+    const reviews = await db
+      .collection("reviews")
+      .find({ mealId: new ObjectId(mealId) })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    console.error("GET /api/meals/:mealId/reviews error:", error);
+    res
+      .status(500)
+      .json({ message: "Błąd pobierania recenzji", error: error.message });
+  }
+});
 
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
