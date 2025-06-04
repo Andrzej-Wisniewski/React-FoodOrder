@@ -6,6 +6,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Modal from "./components/UI/Modal";
 import Button from "./components/UI/Button";
+import AllReviews from "./components/AllReviews.jsx";
 
 import { CartContextProvider } from "./store/CartContext";
 import {
@@ -56,6 +57,7 @@ function AppContent() {
     <>
       <Header />
       <Meals />
+      <AllReviews />
       <Cart />
       <Suspense
         fallback={

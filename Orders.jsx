@@ -1,3 +1,4 @@
+
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../store/AuthContext";
 import UserProgressContext from "../store/UserProgressContext";
@@ -34,7 +35,7 @@ export default function Orders() {
     async function fetchOrders() {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/orders", {
+        const res = await fetch(`/api/orders/${reviewingOrderId}/review`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authCtx.token}`,
@@ -84,10 +85,9 @@ export default function Orders() {
   }
 
   async function submitReview() {
-    if (!reviewingItem || !reviewingItem.id || reviewingItem.id.length !== 24) {
-      setErrorModal({ title: "Błąd recenzji", message: "Nieprawidłowe ID dania." });
-      return;
-    }
+    if (!reviewingItem) return;
+
+    console.log("reviewingItem", reviewingItem);
 
     setIsSubmittingReview(true);
     try {
@@ -121,6 +121,7 @@ export default function Orders() {
     }
   }
 
+
   if (!authCtx.isLoggedIn) return null;
 
   return (
@@ -136,9 +137,7 @@ export default function Orders() {
           <ul className="orders-list">
             {orders.map((order) => (
               <li key={order._id} className="order-item">
-                <h3>
-                  Zamówienie z {new Date(order.createdAt).toLocaleString()}
-                </h3>
+                <h3>Zamówienie z {new Date(order.createdAt).toLocaleString()}</h3>
 
                 <p>
                   Status:{" "}
@@ -163,32 +162,43 @@ export default function Orders() {
                   Kwota:{" "}
                   {currencyFormatter.format(
                     order.totalPrice ||
-                    order.items.reduce(
-                      (sum, item) => sum + item.price * item.quantity,
-                      0
-                    )
+                    order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
                   )}
                 </p>
 
                 <ul>
-                  {order.items.map((it, idx) => (
-                    <li key={idx}>
-                      {it.quantity}× {it.name} (
-                      {currencyFormatter.format(it.price)})
-                      {order.status === "completed" && (
-                        <Button
-                          onClick={() =>
-                            setReviewingItem({
-                              id: it.mealId?.$oid || it.mealId || it.id || it._id,
-                              name: it.name,
-                            })
-                          }
+                  {order.items.map((it, idx) => {
+                    const mealId = typeof it.mealId === 'object' && it.mealId.$oid
+                      ? it.mealId.$oid
+                      : String(it.mealId);
+                    return (
+                      <li key={idx}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "0.5rem",
+                          }}
                         >
-                          Dodaj recenzję
-                        </Button>
-                      )}
-                    </li>
-                  ))}
+                          <span>
+                            {it.quantity}× {it.name} ({currencyFormatter.format(it.price)})
+                          </span>
+                          {order.status === "completed" && (
+                            <Button
+                              onClick={() => {
+                                console.log("Setting reviewingItem with:", { mealId, name: it.name, raw: it });
+                                setReviewingItem({ id: mealId, name: it.name });
+                              }}
+                            >
+                              Dodaj recenzję
+                            </Button>
+
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </li>
             ))}
@@ -216,6 +226,7 @@ export default function Orders() {
             <label>Ocena (1–5):</label>
             <select
               className="rating-select"
+              style={{ fontSize: "1.1rem", padding: "0.4rem", width: "5rem" }}
               value={reviewRating}
               onChange={(e) => setReviewRating(Number(e.target.value))}
             >
@@ -230,6 +241,7 @@ export default function Orders() {
               rows={3}
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
+              style={{ width: "100%", padding: "0.5rem" }}
             />
           </div>
           <div className="modal-actions">

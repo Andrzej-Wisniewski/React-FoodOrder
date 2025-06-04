@@ -347,7 +347,7 @@ app.post("/api/orders", authenticate, async (req, res) => {
       }
 
       return {
-        mealId: new ObjectId(item.id), 
+        mealId: new ObjectId(item.mealId), 
         name: item.name,
         price: item.price,
         quantity: item.quantity,
@@ -664,65 +664,45 @@ app.post(
   }
 );
 
-/**
- * @route POST /api/meals/:mealId/reviews
- * @desc Dodaje nową recenzję do dania
- * @security bearerAuth
- */
-app.post("/api/meals/:mealId/reviews", authenticate, async (req, res) => {
+app.post("/api/orders/:orderId/review", authenticate, async (req, res) => {
   const { rating, comment } = req.body;
-  const { mealId } = req.params;
+  const { orderId } = req.params;
 
-  if (!ObjectId.isValid(mealId)) {
-    return res.status(400).json({ message: "Nieprawidłowe ID dania." });
+  if (!ObjectId.isValid(orderId)) {
+    return res.status(400).json({ message: "Nieprawidłowe ID zamówienia." });
   }
 
   if (!rating || rating < 1 || rating > 5 || !comment?.trim()) {
     return res.status(400).json({ message: "Nieprawidłowe dane recenzji." });
   }
 
-  try {
-    const db = getDB();
+  const db = getDB();
 
-    const hasOrdered = await db.collection("orders").findOne({
-      userId: req.user._id,
-      "items.mealId": new ObjectId(mealId),
-    });
+  const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId), userId: req.user._id });
 
-    if (!hasOrdered) {
-      return res.status(403).json({
-        message: "Możesz ocenić tylko dania, które zamówiłeś.",
-      });
-    }
-
-    const existing = await db.collection("reviews").findOne({
-      mealId: new ObjectId(mealId),
-      userId: req.user._id,
-    });
-
-    if (existing) {
-      return res.status(400).json({
-        message: "Już dodałeś recenzję do tego dania.",
-      });
-    }
-
-    const review = {
-      mealId: new ObjectId(mealId),
-      userId: req.user._id,
-      userName: req.user.name,
-      rating,
-      comment: comment.trim(),
-      createdAt: new Date(),
-    };
-
-    await db.collection("reviews").insertOne(review);
-
-    res.status(201).json({ success: true, message: "Recenzja dodana." });
-  } catch (error) {
-    console.error("POST /api/meals/:mealId/reviews error:", error);
-    res.status(500).json({ message: "Błąd dodawania recenzji", error: error.message });
+  if (!order) {
+    return res.status(403).json({ message: "Nie masz dostępu do tego zamówienia." });
   }
+
+  const existing = await db.collection("reviews").findOne({ orderId: new ObjectId(orderId) });
+
+  if (existing) {
+    return res.status(400).json({ message: "To zamówienie już zostało ocenione." });
+  }
+
+  const review = {
+    orderId: new ObjectId(orderId),
+    userId: req.user._id,
+    userName: req.user.name,
+    rating,
+    comment: comment.trim(),
+    createdAt: new Date(),
+  };
+
+  await db.collection("reviews").insertOne(review);
+  res.status(201).json({ success: true, message: "Recenzja zapisana." });
 });
+
 
 /**
  * @route GET /api/meals/:mealId/reviews
