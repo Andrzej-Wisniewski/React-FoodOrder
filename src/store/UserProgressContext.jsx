@@ -5,45 +5,52 @@ export const PROGRESS_STEPS = {
   CHECKOUT: "checkout",
   LOGIN: "login",
   REGISTER: "register",
-  ORDERS: "orders"
+  ORDERS: "orders",
+  MENU: "menu",
 };
 
 const UserProgressContext = createContext({
-  progress: "",
+  progress: null,
   showCart: () => {},
-  hideCart: () => {},
   showCheckout: () => {},
-  hideCheckout: () => {},
-  showLogin: () => {},
-  hideLogin: () => {},
-  showRegister: () => {},
-  hideRegister: () => {},
   showOrders: () => {},
-  hideOrders: () => {}
+  hideCart: () => {},
+  hideCheckout: () => {},
+  hideOrders: () => {},
+  showMenu: () => {},
+  hideMenu: () => {},
+  showLogin: () => {},
+  showRegister: () => {},
+  showSuccessModal: false,
+  triggerSuccessModal: () => {},
+  hideSuccessModal: () => {},
 });
 
 export function UserProgressContextProvider({ children }) {
-  const [userProgress, setUserProgress] = useState("");
+  const [userProgress, setUserProgress] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const setProgress = (step) => setUserProgress(step);
-  const clearProgress = () => setUserProgress("");
-
-  const ctx = {
+  const ctxValue = {
     progress: userProgress,
-    showCart: () => setProgress(PROGRESS_STEPS.CART),
-    hideCart: clearProgress,
-    showCheckout: () => setProgress(PROGRESS_STEPS.CHECKOUT),
-    hideCheckout: clearProgress,
-    showLogin: () => setProgress(PROGRESS_STEPS.LOGIN),
-    hideLogin: clearProgress,
-    showRegister: () => setProgress(PROGRESS_STEPS.REGISTER),
-    hideRegister: clearProgress,
-    showOrders: () => setProgress(PROGRESS_STEPS.ORDERS),
-    hideOrders: clearProgress
+    showCart: () => setUserProgress(PROGRESS_STEPS.CART),
+    showCheckout: () => setUserProgress(PROGRESS_STEPS.CHECKOUT),
+    showOrders: () => setUserProgress(PROGRESS_STEPS.ORDERS),
+    showMenu: () => setUserProgress(PROGRESS_STEPS.MENU),
+    showLogin: () => setUserProgress(PROGRESS_STEPS.LOGIN),
+    showRegister: () => setUserProgress(PROGRESS_STEPS.REGISTER),
+    hideCart: () => setUserProgress(null),
+    hideCheckout: () => setUserProgress(null),
+    hideOrders: () => setUserProgress(null),
+    hideMenu: () => setUserProgress(null),
+    hideLogin: () => setUserProgress(null),
+    hideRegister: () => setUserProgress(null),
+    showSuccessModal,
+    triggerSuccessModal: () => setShowSuccessModal(true),
+    hideSuccessModal: () => setShowSuccessModal(false),
   };
 
   return (
-    <UserProgressContext.Provider value={ctx}>
+    <UserProgressContext.Provider value={ctxValue}>
       {children}
     </UserProgressContext.Provider>
   );

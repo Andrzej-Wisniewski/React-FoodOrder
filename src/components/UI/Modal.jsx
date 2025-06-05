@@ -5,12 +5,15 @@ export default function Modal({ children, open, onClose, className = '' }) {
     const dialog = useRef(); 
 
     useEffect(() => {
-        const modal = dialog.current; 
-        if (open) {
-            modal.showModal(); 
-        }
+        const modal = dialog.current;
 
-        return () => modal.close(); 
+        if (!modal) return; 
+
+        if (open && !modal.open) {
+            modal.showModal(); 
+        } else if (!open && modal.open) {
+            modal.close(); 
+        } 
     }, [open]);
     
     

@@ -30,6 +30,10 @@ export default function Header() {
     authCtx.logout();
   }
 
+  function handleShowMenu() {
+    userProgressCtx.showMenu();
+  }
+
   function handleShowOrders() {
     userProgressCtx.showOrders();
   }
@@ -40,6 +44,12 @@ export default function Header() {
         <h1>FOOD</h1>
       </div>
       <nav>
+        {authCtx.isLoggedIn && authCtx.user?.role === "admin" && (
+          <Button textOnly onClick={handleShowMenu}>
+            Menu
+          </Button>
+        )}
+
         {!authCtx.isLoggedIn && (
           <>
             <Button textOnly onClick={handleShowLogin}>

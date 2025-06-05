@@ -728,6 +728,29 @@ app.get("/api/meals/:mealId/reviews", async (req, res) => {
   }
 });
 
+/**
+ * @route GET /api/reviews
+ * @desc Zwraca wszystkie recenzje do AllReviews
+ */
+app.get("/api/reviews", async (req, res) => {
+  try {
+    const db = getDB();
+    const reviews = await db
+      .collection("reviews")
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    console.error("GET /api/reviews error:", error);
+    res.status(500).json({
+      message: "Błąd pobierania recenzji",
+      error: error.message,
+    });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({

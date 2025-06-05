@@ -24,6 +24,7 @@ let db;
 
 export const connectDB = async () => {
   try {
+    console.log("Connecting to MongoDB with URI:", uri);
     await client.connect();
     db = client.db();
     console.log("Połączono z MongoDB");
