@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
 import Modal from "./UI/Modal"; 
-import CartContext from "../store/CartContext";
+import { CartContext } from "../store/CartContext";
 import { currencyFormatter } from "../util/formatting";
 import Button from "./UI/Button";
 import UserProgressContext, { PROGRESS_STEPS } from "../store/UserProgressContext";
@@ -31,9 +31,9 @@ export default function Cart() {
     >
       <h2>Koszyk</h2>
       <ul>
-        {cartCtx.items.map(item => (
+        {cartCtx.items.map((item, index) => (
           <CartItem 
-            key={item._id} 
+            key={item._id || index} 
             name={item.name} 
             quantity={item.quantity} 
             price={item.price}

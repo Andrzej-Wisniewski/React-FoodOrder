@@ -30,12 +30,13 @@ export default function Orders() {
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [submittedReviews, setSubmittedReviews] = useState([]);
 
   useEffect(() => {
     async function fetchOrders() {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/orders/${reviewingOrderId}/review`, {
+        const res = await fetch("/api/orders", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authCtx.token}`,
@@ -54,6 +55,29 @@ export default function Orders() {
 
     if (authCtx.isLoggedIn) fetchOrders();
   }, [authCtx.token, authCtx.isLoggedIn]);
+
+  useEffect(() => {
+    async function fetchUserReviews() {
+      try {
+        const res = await fetch("/api/reviews", {
+          headers: {
+            Authorization: `Bearer ${authCtx.token}`,
+          },
+        });
+        const json = await res.json();
+        if (json.success) {
+          setSubmittedReviews(json.data);
+        }
+      } catch (err) {
+        console.error("Błąd pobierania recenzji użytkownika:", err);
+      }
+    }
+
+    if (authCtx.isLoggedIn) {
+      fetchUserReviews();
+    }
+  }, [authCtx.token]);
+
 
   function handleClose() {
     userProgressCtx.hideOrders();
@@ -91,7 +115,7 @@ export default function Orders() {
 
     setIsSubmittingReview(true);
     try {
-      const res = await fetch(`/api/meals/${reviewingItem.id}/reviews`, {
+      const res = await fetch(`/api/orders/${reviewingItem.orderId}/review`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -184,17 +208,19 @@ export default function Orders() {
                           <span>
                             {it.quantity}× {it.name} ({currencyFormatter.format(it.price)})
                           </span>
-                          {order.status === "completed" && (
-                            <Button
-                              onClick={() => {
-                                console.log("Setting reviewingItem with:", { mealId, name: it.name, raw: it });
-                                setReviewingItem({ id: mealId, name: it.name });
-                              }}
-                            >
-                              Dodaj recenzję
-                            </Button>
-
-                          )}
+                          {order.status === "completed" &&
+                            !submittedReviews.some((r) => r.orderId === order._id) && (
+                              <Button
+                                onClick={() =>
+                                  setReviewingItem({
+                                    orderId: order._id,
+                                    name: "Zamówienie z " + new Date(order.createdAt).toLocaleString(),
+                                  })
+                                }
+                              >
+                                Dodaj recenzję
+                              </Button>
+                            )}
                         </div>
                       </li>
                     );

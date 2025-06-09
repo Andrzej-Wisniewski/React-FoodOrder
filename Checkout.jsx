@@ -10,7 +10,7 @@ import AuthContext from "../store/AuthContext";
 import UserProgressContext, {
   PROGRESS_STEPS,
 } from "../store/UserProgressContext";
-import CartContext from "../store/CartContext";
+import { CartContext } from "../store/CartContext";
 import Modal from "./UI/Modal";
 import Input from "./UI/Input";
 import Button from "./UI/Button";
@@ -165,7 +165,7 @@ function CheckoutForm({ items, authToken, total, onSuccess }) {
         const orderPayload = {
           order: {
             items: items.map((i) => ({
-              mealId: i.id,
+              mealId: i._id,
               name: i.name,
               quantity: i.quantity,
               price: i.price,

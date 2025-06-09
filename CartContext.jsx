@@ -1,6 +1,6 @@
 import { createContext, useReducer } from "react";
 
-const CartContext = createContext({
+export const CartContext = createContext({
     items: [],
     addItem: (item) => {},
     removeItem: (id) => {},
@@ -10,7 +10,7 @@ const CartContext = createContext({
 function cartReducer(state, action) {
     if (action.type === 'ADD_ITEM') {
         const existingCartItemIndex = state.items.findIndex(
-        (item) => item.id === action.item._id
+        (item) => item.id === action.item.id
     );
     const updatedItems = [...state.items]; 
 
@@ -31,7 +31,7 @@ function cartReducer(state, action) {
 
     if (action.type === 'REMOVE_ITEM') {
         const existingCartItemIndex = state.items.findIndex(
-            (item) => item.id === action.item.id
+            (item) => item.id === action.id
     )
         const existingCartItem = state.items[existingCartItemIndex];
 
@@ -81,9 +81,9 @@ export function CartContextProvider({children}) {
     };
 
     return (
-        <CartContext value={cartContext}>
+        <CartContext.Provider value={cartContext}>
             {children}
-        </CartContext>
+        </CartContext.Provider>
     )
 }
 

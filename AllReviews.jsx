@@ -5,13 +5,15 @@ export default function AllReviews() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/meals/${mealId}/reviews`)
+    fetch("/api/reviews")
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) throw new Error("Błąd podczas pobierania recenzji.");
         setReviews(data.data || []);
       })
-      .catch((err) => setError(err.message || "Błąd połączenia z serwerem."));
+      .catch((err) =>
+        setError(err.message || "Błąd połączenia z serwerem.")
+      );
   }, []);
 
   if (error) {
@@ -38,7 +40,7 @@ export default function AllReviews() {
             }}
           >
             <p style={{ marginBottom: "0.5rem" }}>
-              <strong>{r.userName}</strong> ocenił <em>{r.mealName}</em> na{" "}
+              <strong>{r.userName}</strong> ocenił <em>{r.mealName || "danie"}</em> na{" "}
               <strong>{r.rating}/5</strong>
             </p>
             <p style={{ marginBottom: "0.5rem", fontStyle: "italic" }}>{r.comment}</p>
