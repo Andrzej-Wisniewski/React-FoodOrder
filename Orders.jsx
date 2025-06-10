@@ -209,6 +209,7 @@ export default function Orders() {
                             {it.quantity}× {it.name} ({currencyFormatter.format(it.price)})
                           </span>
                           {order.status === "completed" &&
+                          authCtx.user?.role !== "admin" &&
                             !submittedReviews.some((r) => r.orderId === order._id) && (
                               <Button
                                 onClick={() =>

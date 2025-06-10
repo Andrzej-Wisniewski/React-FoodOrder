@@ -341,8 +341,10 @@ app.post("/api/orders", authenticate, async (req, res) => {
       return res.status(400).json({ message: "Nieprawidłowy email" });
     }
 
+    console.log("Odebrane pozycje:", orderData.items);
+
     const transformedItems = orderData.items.map((item) => {
-      if (!item.id || !item.name || !item.price || !item.quantity) {
+      if (!item.mealId || !item.name || !item.price || !item.quantity) {
         throw new Error("Nieprawidłowe dane pozycji zamówienia.");
       }
 

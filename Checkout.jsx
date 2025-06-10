@@ -165,10 +165,10 @@ function CheckoutForm({ items, authToken, total, onSuccess }) {
         const orderPayload = {
           order: {
             items: items.map((i) => ({
-              mealId: i._id,
+              mealId: i.id,
               name: i.name,
               quantity: i.quantity,
-              price: i.price,
+              price: parseFloat(i.price)
             })),
             customer,
           },

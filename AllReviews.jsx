@@ -23,34 +23,22 @@ export default function AllReviews() {
   if (!reviews.length) return null;
 
   return (
-    <section style={{ width: "90%", maxWidth: "70rem", margin: "2rem auto" }}>
-      <h2 style={{ textAlign: "center", color: "#ffc404", fontFamily: "Lato, sans-serif" }}>
+    <section id="meals">
+      <h2 style={{ gridColumn: "1/-1", textAlign: "center", color: "#ffc404" }}>
         Opinie użytkowników
       </h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {reviews.map((r, i) => (
-          <li
-            key={i}
-            className="modal"
-            style={{
-              marginBottom: "1rem",
-              backgroundColor: "#1d1a16",
-              color: "#d9e2f1",
-              fontSize: "1rem",
-            }}
-          >
-            <p style={{ marginBottom: "0.5rem" }}>
-              <strong>{r.userName}</strong> ocenił <em>{r.mealName || "danie"}</em> na{" "}
-              <strong>{r.rating}/5</strong>
-            </p>
-            <p style={{ marginBottom: "0.5rem", fontStyle: "italic" }}>{r.comment}</p>
+      {reviews.map((r, i) => (
+        <li key={i} className="meal-item">
+          <article style={{ padding: "1rem", textAlign: "left" }}>
+            <p><strong>{r.userName}</strong> ocenił <em>danie</em> na <strong>{r.rating}/5</strong></p>
+            <p style={{ fontStyle: "italic", margin: "0.5rem 0" }}>{r.comment}</p>
             <p style={{ fontSize: "0.8rem", color: "#999" }}>
               {new Date(r.createdAt).toLocaleDateString()}{" "}
               {new Date(r.createdAt).toLocaleTimeString()}
             </p>
-          </li>
-        ))}
-      </ul>
-    </section>
+          </article>
+        </li>
+      ))}
+    </section >
   );
 }
