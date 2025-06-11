@@ -17,7 +17,7 @@ export default function MealItem({ meal }) {
     }
 
     return (
-        <li className="meal-item">
+        <li className="card meal-item">
             <article>
                 <img src={meal.image} alt={meal.name} loading="lazy" />
                 <div>

@@ -23,19 +23,36 @@ export default function AllReviews() {
   if (!reviews.length) return null;
 
   return (
-    <section id="meals">
+    <section className="review-list">
       <h2 style={{ gridColumn: "1/-1", textAlign: "center", color: "#ffc404" }}>
         Opinie użytkowników
       </h2>
       {reviews.map((r, i) => (
-        <li key={i} className="meal-item">
+        <li key={i} className="card review-item">
           <article style={{ padding: "1rem", textAlign: "left" }}>
-            <p><strong>{r.userName}</strong> ocenił <em>danie</em> na <strong>{r.rating}/5</strong></p>
-            <p style={{ fontStyle: "italic", margin: "0.5rem 0" }}>{r.comment}</p>
-            <p style={{ fontSize: "0.8rem", color: "#999" }}>
-              {new Date(r.createdAt).toLocaleDateString()}{" "}
-              {new Date(r.createdAt).toLocaleTimeString()}
+            <p><strong>{r.userName}</strong> ocenił <em>danie</em> na <div style={{ color: "#ffc404", fontSize: "1.1rem" }}>
+              {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+            </div></p>
+            <p className="review-quote">„{r.comment}”</p>
+
+            <p style={{ fontSize: "0.85rem", color: "#aaa", marginTop: "0.5rem" }}>
+              Zamówienie: {" "}
+              {r.mealNames?.map((name, idx) => (
+                <span key={idx} style={{ color: "#ffc404" }}>
+                  {name}
+                  {idx < r.mealNames.length - 1 ? ", " : ""}
+                </span>
+              ))}
             </p>
+            <p style={{ color: "#999", fontSize: "0.8rem" }}>
+              {new Date(r.createdAt).toLocaleDateString("pl-PL", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}{" "}
+              o godz: {new Date(r.createdAt).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+
           </article>
         </li>
       ))}

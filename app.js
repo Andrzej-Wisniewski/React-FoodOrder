@@ -349,7 +349,7 @@ app.post("/api/orders", authenticate, async (req, res) => {
       }
 
       return {
-        mealId: new ObjectId(item.mealId), 
+        mealId: new ObjectId(item.mealId),
         name: item.name,
         price: item.price,
         quantity: item.quantity,
@@ -680,16 +680,24 @@ app.post("/api/orders/:orderId/review", authenticate, async (req, res) => {
 
   const db = getDB();
 
-  const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId), userId: req.user._id });
+  const order = await db
+    .collection("orders")
+    .findOne({ _id: new ObjectId(orderId), userId: req.user._id });
 
   if (!order) {
-    return res.status(403).json({ message: "Nie masz dostępu do tego zamówienia." });
+    return res
+      .status(403)
+      .json({ message: "Nie masz dostępu do tego zamówienia." });
   }
 
-  const existing = await db.collection("reviews").findOne({ orderId: new ObjectId(orderId) });
+  const existing = await db
+    .collection("reviews")
+    .findOne({ orderId: new ObjectId(orderId) });
 
   if (existing) {
-    return res.status(400).json({ message: "To zamówienie już zostało ocenione." });
+    return res
+      .status(400)
+      .json({ message: "To zamówienie już zostało ocenione." });
   }
 
   const review = {
@@ -699,12 +707,12 @@ app.post("/api/orders/:orderId/review", authenticate, async (req, res) => {
     rating,
     comment: comment.trim(),
     createdAt: new Date(),
+    mealNames: order.items.map((item) => item.name),
   };
 
   await db.collection("reviews").insertOne(review);
   res.status(201).json({ success: true, message: "Recenzja zapisana." });
 });
-
 
 /**
  * @route GET /api/meals/:mealId/reviews

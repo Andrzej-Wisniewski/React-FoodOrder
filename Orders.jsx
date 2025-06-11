@@ -1,4 +1,3 @@
-
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../store/AuthContext";
 import UserProgressContext from "../store/UserProgressContext";
@@ -10,11 +9,16 @@ import Input from "./UI/Input";
 
 function translateStatus(status) {
   switch (status) {
-    case "pending": return "Oczekujące";
-    case "in progress": return "W trakcie";
-    case "completed": return "Zrealizowane";
-    case "cancelled": return "Anulowane";
-    default: return status;
+    case "pending":
+      return "Oczekujące";
+    case "in progress":
+      return "W trakcie";
+    case "completed":
+      return "Zrealizowane";
+    case "cancelled":
+      return "Anulowane";
+    default:
+      return status;
   }
 }
 
@@ -78,7 +82,6 @@ export default function Orders() {
     }
   }, [authCtx.token]);
 
-
   function handleClose() {
     userProgressCtx.hideOrders();
   }
@@ -111,8 +114,6 @@ export default function Orders() {
   async function submitReview() {
     if (!reviewingItem) return;
 
-    console.log("reviewingItem", reviewingItem);
-
     setIsSubmittingReview(true);
     try {
       const res = await fetch(`/api/orders/${reviewingItem.orderId}/review`, {
@@ -132,6 +133,11 @@ export default function Orders() {
         throw new Error(data.message || "Nie udało się dodać recenzji");
       }
 
+      // odśwież listę recenzji
+      setSubmittedReviews((prev) => [
+        ...prev,
+        { orderId: reviewingItem.orderId },
+      ]);
       setReviewingItem(null);
       setReviewText("");
       setReviewRating(5);
@@ -144,7 +150,6 @@ export default function Orders() {
       setIsSubmittingReview(false);
     }
   }
-
 
   if (!authCtx.isLoggedIn) return null;
 
@@ -186,47 +191,35 @@ export default function Orders() {
                   Kwota:{" "}
                   {currencyFormatter.format(
                     order.totalPrice ||
-                    order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+                      order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
                   )}
                 </p>
 
                 <ul>
-                  {order.items.map((it, idx) => {
-                    const mealId = typeof it.mealId === 'object' && it.mealId.$oid
-                      ? it.mealId.$oid
-                      : String(it.mealId);
-                    return (
-                      <li key={idx}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          <span>
-                            {it.quantity}× {it.name} ({currencyFormatter.format(it.price)})
-                          </span>
-                          {order.status === "completed" &&
-                          authCtx.user?.role !== "admin" &&
-                            !submittedReviews.some((r) => r.orderId === order._id) && (
-                              <Button
-                                onClick={() =>
-                                  setReviewingItem({
-                                    orderId: order._id,
-                                    name: "Zamówienie z " + new Date(order.createdAt).toLocaleString(),
-                                  })
-                                }
-                              >
-                                Dodaj recenzję
-                              </Button>
-                            )}
-                        </div>
-                      </li>
-                    );
-                  })}
+                  {order.items.map((item, idx) => (
+                    <li key={idx}>
+                      {item.quantity}× {item.name} ({currencyFormatter.format(item.price)})
+                    </li>
+                  ))}
                 </ul>
+
+                {/* Jeden przycisk dla zamówienia */}
+                {order.status === "completed" &&
+                  !submittedReviews.some((r) => r.orderId === order._id) &&
+                  authCtx.user?.role !== "admin" && (
+                    <div style={{ marginTop: "0.75rem" }}>
+                      <Button
+                        onClick={() =>
+                          setReviewingItem({
+                            orderId: order._id,
+                            name: "Zamówienie z " + new Date(order.createdAt).toLocaleString(),
+                          })
+                        }
+                      >
+                        Dodaj recenzję
+                      </Button>
+                    </div>
+                  )}
               </li>
             ))}
           </ul>
@@ -258,7 +251,9 @@ export default function Orders() {
               onChange={(e) => setReviewRating(Number(e.target.value))}
             >
               {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{n}</option>
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
             </select>
           </div>
