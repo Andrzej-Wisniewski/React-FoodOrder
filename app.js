@@ -529,7 +529,7 @@ app.post("/api/admin/meals", authenticate, authorizeAdmin, async (req, res) => {
       "Deser",
       "Napoje",
     ];
-    const { name, price, description, image } = req.body;
+    const { name, price, description, image, category } = req.body;
 
     if (!name || !price || !description || !image) {
       return res.status(400).json({ message: "Wszystkie pola są wymagane." });

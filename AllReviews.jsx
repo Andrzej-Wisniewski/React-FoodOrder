@@ -30,9 +30,12 @@ export default function AllReviews() {
       {reviews.map((r, i) => (
         <li key={i} className="card review-item">
           <article style={{ padding: "1rem", textAlign: "left" }}>
-            <p><strong>{r.userName}</strong> ocenił <em>danie</em> na <div style={{ color: "#ffc404", fontSize: "1.1rem" }}>
-              {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
-            </div></p>
+            <p>
+              <strong>{r.userName}</strong> ocenił <em>danie</em> na
+              <div style={{ color: "#ffc404", fontSize: "1.1rem" }}>
+                {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+              </div>
+            </p>
             <p className="review-quote">„{r.comment}”</p>
 
             <p style={{ fontSize: "0.85rem", color: "#aaa", marginTop: "0.5rem" }}>
