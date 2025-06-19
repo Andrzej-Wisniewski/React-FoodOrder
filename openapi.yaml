@@ -1,82 +1,11 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: Food Order API
   version: 1.0.0
-  description: API do składania zamówień i zarządzania użytkownikami
+  description: API aplikacji do zamawiania jedzenia
 
 servers:
   - url: http://localhost:3000
-
-paths:
-  /api/meals:
-    get:
-      summary: Pobierz listę posiłków
-      responses:
-        '200':
-          description: Lista posiłków
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Meal'
-
-  /api/register:
-    post:
-      summary: Rejestracja użytkownika
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterUser'
-      responses:
-        '201':
-          description: Zarejestrowano
-        '400':
-          description: Błąd walidacji
-        '409':
-          description: Użytkownik już istnieje
-
-  /api/login:
-    post:
-      summary: Logowanie użytkownika
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginUser'
-      responses:
-        '200':
-          description: Zalogowano
-        '401':
-          description: Błędne dane logowania
-
-  /api/orders:
-    post:
-      summary: Składanie zamówienia (wymaga tokenu JWT)
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderRequest'
-      responses:
-        '201':
-          description: Zamówienie zapisane
-        '400':
-          description: Nieprawidłowe dane
-
-    get:
-      summary: Pobierz zamówienia użytkownika (wymaga tokenu JWT)
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Lista zamówień
 
 components:
   securitySchemes:
@@ -84,60 +13,367 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
     Meal:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        description:
+          type: string
+        image:
+          type: string
+    OrderItem:
       type: object
       properties:
         id:
           type: string
         name:
           type: string
-        description:
-          type: string
+        quantity:
+          type: integer
         price:
-          type: string
-        image:
-          type: string
-
-    RegisterUser:
+          type: number
+    Customer:
       type: object
-      required: [name, email, password]
       properties:
         name:
           type: string
         email:
           type: string
-        password:
+        street:
           type: string
-
-    LoginUser:
+        postalCode:
+          type: string
+        city:
+          type: string
+    Order:
       type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-        password:
-          type: string
-
-    OrderRequest:
-      type: object
-      required: [items, customer]
       properties:
         items:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/OrderItem"
         customer:
-          type: object
-          properties:
-            email:
-              type: string
-            name:
-              type: string
-            street:
-              type: string
-            postalCode:
-              type: string
-            city:
-              type: string
+          $ref: "#/components/schemas/Customer"
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Review:
+      type: object
+      properties:
+        orderId:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        mealNames:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  /api/meals:
+    get:
+      summary: Pobierz listę dań
+      tags: [Meals]
+      responses:
+        "200":
+          description: Lista dań
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meal"
+
+  /api/register:
+    post:
+      summary: Rejestracja nowego użytkownika
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [name, email, password]
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "201":
+          description: Użytkownik zarejestrowany
+
+  /api/login:
+    post:
+      summary: Logowanie użytkownika
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [email, password]
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Logowanie udane
+
+  /api/orders:
+    get:
+      summary: Pobierz zamówienia
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lista zamówień użytkownika lub administratora
+    post:
+      summary: Złóż nowe zamówienie
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: "#/components/schemas/Order"
+      responses:
+        "201":
+          description: Zamówienie złożone
+
+  /api/orders/{id}/status:
+    put:
+      summary: Zmień status zamówienia (admin)
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [pending, in progress, completed, cancelled]
+      responses:
+        "200":
+          description: Status zaktualizowany
+
+  /api/orders/{orderId}/review:
+    post:
+      summary: Dodaj recenzję do zamówienia
+      tags: [Reviews]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [rating, comment]
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        "201":
+          description: Recenzja zapisana
+        "400":
+          description: Nieprawidłowe dane recenzji
+        "403":
+          description: Brak dostępu do zamówienia
+        "500":
+          description: Błąd serwera
+
+  /api/reviews:
+    get:
+      summary: Pobierz wszystkie recenzje
+      tags: [Reviews]
+      responses:
+        "200":
+          description: Lista recenzji
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+  /api/payment:
+    post:
+      summary: Utwórz płatność Stripe
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/OrderItem"
+                currency:
+                  type: string
+                  default: pln
+                metadata:
+                  $ref: "#/components/schemas/Customer"
+      responses:
+        "200":
+          description: clientSecret do płatności Stripe
+
+  /api/admin/meals:
+    get:
+      summary: Pobierz wszystkie posiłki (admin)
+      tags: [MealsAdmin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lista posiłków
+    post:
+      summary: Dodaj nowe danie (admin)
+      tags: [MealsAdmin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meal"
+      responses:
+        "201":
+          description: Dodano danie
+
+  /api/admin/meals/{id}:
+    put:
+      summary: Zaktualizuj dane dania (admin)
+      tags: [MealsAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meal"
+      responses:
+        "200":
+          description: Danie zaktualizowane
+    delete:
+      summary: Usuń danie (admin)
+      tags: [MealsAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Danie usunięte
+
+  /api/admin/meals/{id}/image:
+    post:
+      summary: Prześlij zdjęcie dania (admin)
+      tags: [MealsAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Zdjęcie zaktualizowane
+
+tags:
+  - name: Meals
+    description: Operacje na posiłkach
+  - name: MealsAdmin
+    description: Zarządzanie posiłkami przez administratora
+  - name: Auth
+    description: Logowanie i rejestracja
+  - name: Orders
+    description: Składanie i przeglądanie zamówień
+  - name: Payments
+    description: Obsługa płatności
+  - name: Reviews
+    description: System recenzji i ocen

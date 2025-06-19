@@ -36,7 +36,7 @@ export const connectDB = async () => {
 
 /**
  * Zwraca instancję bazy danych.
- * @returns {import("mongodb").Db}
+ * @returns {Object} - Instancja MongoDB
  */
 
 export const getDB = () => {

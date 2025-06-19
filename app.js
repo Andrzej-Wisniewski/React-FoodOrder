@@ -88,9 +88,9 @@ const upload = multer({
 
 /**
  * Middleware do uwierzytelniania użytkownika za pomocą tokenu JWT.
- * @param {import("express").Request} req
- * @param {import("express").Response} res
- * @param {Function} next
+ * @param {Object} req - Obiekt żądania Express
+ * @param {Object} res - Obiekt odpowiedzi Express
+ * @param {Function} next - Funkcja kontynuująca middleware
  */
 
 const authenticate = async (req, res, next) => {
