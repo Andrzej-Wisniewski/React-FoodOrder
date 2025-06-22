@@ -125,22 +125,22 @@ W ramach projektu przewidziane jest zarówno stworzenie części backendowej (No
 | System płatności | Zewnętrzny system do przetwarzania transakcji. |
 | System powiadomień | Moduł wysyłający powiadomienia do użytkowników. |
 
-![image.png](/.attachments/image-55402207-6ea3-4528-8b61-4c8aea3d0aaa.png)
+![image.png](.attachments/image-55402207-6ea3-4528-8b61-4c8aea3d0aaa.png)
 
 Powyższy diagram przedstawia interakcje użytkownika z systemem zamówień.
 
-![image.png](/.attachments/image-3f74a779-b24b-41ee-b2c6-1ef3dc17ac74.png)
+![image.png](.attachments/image-3f74a779-b24b-41ee-b2c6-1ef3dc17ac74.png)
 
 Powyższy diagram przedstawia zadania administratora w systemie zamówień.
 
-![image.png](/.attachments/image-c6982cb6-25a8-4cf1-8626-05b625ae5c79.png)
+![image.png](.attachments/image-c6982cb6-25a8-4cf1-8626-05b625ae5c79.png)
 
 Powyższy diagram przedstawia interakcję kuriera oraz integrację z systemami płatności i powiadomień.
 
 -----------------------------------------------
 # **Architektura systemu**
 
-![image.png](/.attachments/image-7fcf4aa7-7683-41e4-84d0-952af3bdf623.png)
+![image.png](.attachments/image-7fcf4aa7-7683-41e4-84d0-952af3bdf623.png)
 
 Diagram przedstawia architekturę aplikacji podzieloną na trzy główne warstwy:
 1.  Frontend (React) – Odpowiada za interakcję z użytkownikiem. Przeglądarka wysyła żądania do interfejsu użytkownika, który komunikuje się z backendem.
@@ -156,13 +156,13 @@ Dodatkowo backend integruje się z:
 
 ## a) Logowanie użytkownika
 
-![image.png](/.attachments/image-6dac1a88-63df-4248-baa7-52c8a5ef244b.png)
+![image.png](.attachments/image-6dac1a88-63df-4248-baa7-52c8a5ef244b.png)
 
 Diagram przedstawia proces logowania użytkownika. Po wprowadzeniu danych frontend przesyła je do backendu, który weryfikuje je w bazie danych i zwraca odpowiedni status.
 
 ## b) Składanie zamówienia
 
-![image.png](/.attachments/image-ada0633a-4bb9-4102-9f9c-f79f75646dd4.png)
+![image.png](.attachments/image-ada0633a-4bb9-4102-9f9c-f79f75646dd4.png)
 
 Diagram przedstawia proces składania zamówienia przez użytkownika, jego zapis w bazie danych, przetwarzanie płatności za pomocą zewnętrznego systemu płatności oraz poinformowanie użytkownika o statusie zamówienia.
 
@@ -286,7 +286,7 @@ Uzasadnienie:
     
 *   Przycisk "Dodaj do koszyka"
     
-![image.png](/.attachments/image-3aef4b16-061c-4486-abfa-9b84a72b4b0b.png)
+![image.png](.attachments/image-3aef4b16-061c-4486-abfa-9b84a72b4b0b.png)
 
 
 ### **Ekran logowania**
@@ -299,7 +299,7 @@ Uzasadnienie:
 
 *   Przycisk "Zaloguj się"
  
-![image.png](/.attachments/image-9de379a6-bc9d-40f9-b596-c4b330369981.png)
+![image.png](.attachments/image-9de379a6-bc9d-40f9-b596-c4b330369981.png)
 
 
 ### **Ekran rejestracji** 
@@ -314,7 +314,7 @@ Uzasadnienie:
 
 * Przycisk "Zarejestruj" 
 
-![image.png](/.attachments/image-0514edf5-d045-46f7-970a-fd0b19c2f200.png)
+![image.png](.attachments/image-0514edf5-d045-46f7-970a-fd0b19c2f200.png)
 
 
 ### **Zamówienie** 
@@ -327,7 +327,7 @@ Uzasadnienie:
 
 * Całkowita Kwota 
 
-![image.png](/.attachments/image-5942a52b-236e-4a8a-a2c9-0b6960d7c8c9.png)
+![image.png](.attachments/image-5942a52b-236e-4a8a-a2c9-0b6960d7c8c9.png)
 
 ## Dokumentacja API
 
@@ -358,58 +358,58 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
 ------------------------------------------
 
 #### Formularz rejestracji
-![image.png](/.attachments/image-42ada6d5-eba9-428e-9c77-6665f6e13e9b.png)
-![image.png](/.attachments/image-1b327dff-7e99-4be7-acdc-8a9b32e9bacd.png)
-![image.png](/.attachments/image-681c2c5c-228f-4530-b833-563ff876399a.png)
+![image.png](.attachments/image-42ada6d5-eba9-428e-9c77-6665f6e13e9b.png)
+![image.png](.attachments/image-1b327dff-7e99-4be7-acdc-8a9b32e9bacd.png)
+![image.png](.attachments/image-681c2c5c-228f-4530-b833-563ff876399a.png)
 
 #### Błąd walidacji przy rejestracji
-![image.png](/.attachments/image-b4e6b71c-370f-47a4-816e-7eaf2b02c5d6.png)
-![image.png](/.attachments/image-b1b9571a-0f25-451a-99d8-91b3cf3c8b51.png)
-![image.png](/.attachments/image-06b52d04-5995-433b-8bdd-c0bd1f37bdba.png)
+![image.png](.attachments/image-b4e6b71c-370f-47a4-816e-7eaf2b02c5d6.png)
+![image.png](.attachments/image-b1b9571a-0f25-451a-99d8-91b3cf3c8b51.png)
+![image.png](.attachments/image-06b52d04-5995-433b-8bdd-c0bd1f37bdba.png)
 
 #### Formularz logowania
-![image.png](/.attachments/image-ae3dd053-b7b2-4341-8ba9-cb30f7d01359.png)
+![image.png](.attachments/image-ae3dd053-b7b2-4341-8ba9-cb30f7d01359.png)
 
 
 #### Widok po zalogowaniu
-![image.png](/.attachments/image-d13da5bc-da82-43d2-a64d-d2aa310b9eae.png)
+![image.png](.attachments/image-d13da5bc-da82-43d2-a64d-d2aa310b9eae.png)
 
 
 #### Przeglądanie listy posiłków
-![image.png](/.attachments/image-7061ecdf-1a9a-485c-b390-7eedbf608acb.png)
+![image.png](.attachments/image-7061ecdf-1a9a-485c-b390-7eedbf608acb.png)
 
 
 #### Koszyk z dodanymi produktami
-![image.png](/.attachments/image-1ba6e705-de07-4902-9c41-532b2e965616.png)
+![image.png](.attachments/image-1ba6e705-de07-4902-9c41-532b2e965616.png)
 
 
 #### Formularz zamówienia
 ![image.png](/.attachments/image-fe3c5b
 
 #### Podsumowanie płatności
-![image.png](/.attachments/image-aafe8dd1-6e5a-4a91-b720-826d6e114e27.png)
+![image.png](.attachments/image-aafe8dd1-6e5a-4a91-b720-826d6e114e27.png)
 
 
 #### Widok płatności Stripe
-![image.png](/.attachments/image-8a5ec0b9-de4b-495f-aa20-b74b06ac2c1a.png) 
+![image.png](.attachments/image-8a5ec0b9-de4b-495f-aa20-b74b06ac2c1a.png) 
 
 
 #### Historia zamówień
-![image.png](/.attachments/image-46458975-f3ba-499d-b451-519795534024.png) 
+![image.png](.attachments/image-46458975-f3ba-499d-b451-519795534024.png) 
 
 
 #### Edycja posiłku (admin)
-![image.png](/.attachments/image-8f0f03b0-33c6-43e6-bae0-221ea61f783c.png) 
+![image.png](.attachments/image-8f0f03b0-33c6-43e6-bae0-221ea61f783c.png) 
 
 
 #### Dodawanie nowego posiłku
-![image.png](/.attachments/image-9250ec35-aaad-48a2-93fb-1d341126bcf9.png) 
-![image.png](/.attachments/image-b988232b-e083-498a-8000-8ef68756e11d.png) 
-![image.png](/.attachments/image-2c84aca7-5ef1-4026-be15-c9cd1cc2d510.png)
+![image.png](.attachments/image-9250ec35-aaad-48a2-93fb-1d341126bcf9.png) 
+![image.png](.attachments/image-b988232b-e083-498a-8000-8ef68756e11d.png) 
+![image.png](.attachments/image-2c84aca7-5ef1-4026-be15-c9cd1cc2d510.png)
 
 
 #### Panel zamówień (admin)
-![image.png](/.attachments/image-f40916e3-d218-4e01-9a07-850bcb285015.png)
+![image.png](.attachments/image-f40916e3-d218-4e01-9a07-850bcb285015.png)
 
 ------------------------------------------
 
@@ -430,13 +430,13 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
 
 # **Testy jednostkowe**
 
-![image.png](/.attachments/image-7a81e5f4-895b-4e4a-9e88-e13c5f0a5841.png)
+![image.png](.attachments/image-7a81e5f4-895b-4e4a-9e88-e13c5f0a5841.png)
 
 ------------------------------------------
 
 # **Testy Integracyjne**
 
-![image.png](/.attachments/image-95eaf5d6-fbfc-406a-90e0-c293f14281a9.png)
+![image.png](.attachments/image-95eaf5d6-fbfc-406a-90e0-c293f14281a9.png)
 
 ------------------------------------------
 
@@ -452,14 +452,14 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
     
 3.  Kliknij przycisk „Zaloguj”.
 
-![image.png](/.attachments/image-05b4b867-b010-4bc4-bb10-a0773c1dc1d7.png)
+![image.png](.attachments/image-05b4b867-b010-4bc4-bb10-a0773c1dc1d7.png)
     
 **Oczekiwany rezultat:**
 *   Formularz logowania znika.
     
 *   W nagłówku pojawia się przycisk „Zamówienia” i „Wyloguj”.
     
-![image.png](/.attachments/image-11f45230-2cb2-4638-93c3-3b703098fd9f.png)
+![image.png](.attachments/image-11f45230-2cb2-4638-93c3-3b703098fd9f.png)
 
 * * *
 
@@ -473,7 +473,7 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
     
 3.  Kliknij „Zaloguj”.
 
-![image.png](/.attachments/image-ac9322c7-163e-4c93-abd2-5e435ffed563.png)
+![image.png](.attachments/image-ac9322c7-163e-4c93-abd2-5e435ffed563.png)
     
 **Oczekiwany rezultat:**
 *   Pojawia się modal z błędem „Błąd logowania”.
@@ -494,16 +494,16 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
     
 3.  Kliknij „Zarejestruj”.
 
-![image.png](/.attachments/image-220f41b9-cf77-4c93-8660-dd55b25bb99b.png)
+![image.png](.attachments/image-220f41b9-cf77-4c93-8660-dd55b25bb99b.png)
     
 **Oczekiwany rezultat:**
 *   Formularz znika.
 
-![image.png](/.attachments/image-9c0f35c7-0124-48d8-9c9d-e7dbd772be11.png)
+![image.png](.attachments/image-9c0f35c7-0124-48d8-9c9d-e7dbd772be11.png)
     
 *   Użytkownik zostaje automatycznie zalogowany.
     
-![image.png](/.attachments/image-c3f91a67-68cd-4cee-b69a-5b01cf04daab.png)
+![image.png](.attachments/image-c3f91a67-68cd-4cee-b69a-5b01cf04daab.png)
 
 * * *
 
@@ -515,14 +515,14 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
     
 2.  Kliknij „Koszyk” → „Przejdź do płatności”.
 
-![image.png](/.attachments/image-d2bde0d9-e788-454a-9fc2-5bd5ec7b293f.png)
+![image.png](.attachments/image-d2bde0d9-e788-454a-9fc2-5bd5ec7b293f.png)
     
 **Oczekiwany rezultat:**
 *   Pojawia się modal z informacją: „Nie jesteś zalogowany”.
     
 *   Widoczne przyciski „Zaloguj się” i „Zarejestruj się”.
     
-![image.png](/.attachments/image-21900dc8-d7eb-46ed-940b-e92c70138674.png)
+![image.png](.attachments/image-21900dc8-d7eb-46ed-940b-e92c70138674.png)
 
 * * *
 
@@ -532,7 +532,7 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
 **Kroki:**
 1.  Zaloguj się jako użytkownik.
 
-![image.png](/.attachments/image-d8cbb3ce-c884-4138-b938-79d4041d0607.png)
+![image.png](.attachments/image-d8cbb3ce-c884-4138-b938-79d4041d0607.png)
     
 2.  Dodaj kilka dań do koszyka.
     
@@ -542,16 +542,16 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
     
 5.  Kliknij „Zapłać i złóż zamówienie”.
 
-![image.png](/.attachments/image-dd053186-54e9-47b1-acc4-364d44e81c74.png)
+![image.png](.attachments/image-dd053186-54e9-47b1-acc4-364d44e81c74.png)
     
 **Oczekiwany rezultat:**
 *   Pojawia się komunikat „Zamówienie przyjęte!”.
 
-![image.png](/.attachments/image-f924edb5-8f1d-45cd-b1b7-5f52e3a5738c.png)
+![image.png](.attachments/image-f924edb5-8f1d-45cd-b1b7-5f52e3a5738c.png)
     
 *   Przycisk „Przejdź do zamówień” przenosi do listy.
 
-![image.png](/.attachments/image-d36a4e42-2413-40be-a87b-e99cc298b5af.png)
+![image.png](.attachments/image-d36a4e42-2413-40be-a87b-e99cc298b5af.png)
 
 | **Funkcjonalność** | **Miejsce w kodzie** |
 | --- | --- |
@@ -566,10 +566,10 @@ Interaktywna dokumentacja Swagger UI: (http://localhost:3000/docs)
 
 # **Raport wydajnościowy**
 
-![image.png](/.attachments/image-82959618-efb5-4cf4-8980-20b7fa62f8f1.png)
-![image.png](/.attachments/image-2baeb0df-9bf3-439d-b3ee-10c11a062e0c.png)
-![image.png](/.attachments/image-2fbbc8b0-8ddb-45ec-8801-fc8d5177d648.png)
-![image.png](/.attachments/image-36bb57da-dcf5-4324-885c-ae8392c9ff38.png)
+![image.png](.attachments/image-82959618-efb5-4cf4-8980-20b7fa62f8f1.png)
+![image.png](.attachments/image-2baeb0df-9bf3-439d-b3ee-10c11a062e0c.png)
+![image.png](.attachments/image-2fbbc8b0-8ddb-45ec-8801-fc8d5177d648.png)
+![image.png](.attachments/image-36bb57da-dcf5-4324-885c-ae8392c9ff38.png)
 
 
 # Główne wskaźniki i problemy wydajności
@@ -580,7 +580,7 @@ Rozwiązanie:
 Przekonwertowanie ich do formatu WebP 
 
 ### Test po wprowadzeniu zmian
-![image.png](/.attachments/image-6390df2c-0f64-42a2-9235-0d3797690207.png)
+![image.png](.attachments/image-6390df2c-0f64-42a2-9235-0d3797690207.png)
 
 ## Problem 2: Stripe jest ładowany zawsze 
 
