@@ -761,6 +761,34 @@ app.get("/api/reviews", async (req, res) => {
   }
 });
 
+/**
+ * @route PUT /api/reviews/:id
+ * @desc Edycja recenzji przez zalogowanego użytkownika
+ */
+app.put("/api/reviews/:id", authenticate, async (req, res) => {
+  const { rating, comment } = req.body;
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id) || !rating || !comment?.trim()) {
+    return res.status(400).json({ message: "Nieprawidłowe dane." });
+  }
+
+  const db = getDB();
+  const review = await db.collection("reviews").findOne({ _id: new ObjectId(id) });
+
+  if (!review || !review.userId.equals(req.user._id)) {
+    return res.status(403).json({ message: "Brak dostępu do edycji." });
+  }
+
+  await db.collection("reviews").updateOne(
+    { _id: review._id },
+    { $set: { rating, comment: comment.trim(), updatedAt: new Date() } }
+  );
+
+  res.json({ success: true, message: "Recenzja zaktualizowana." });
+});
+
+
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({
